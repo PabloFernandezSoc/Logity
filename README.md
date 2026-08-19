@@ -26,6 +26,8 @@ styles.css          Estilos y design tokens (:root)
 main.js             Nav móvil, reveal al scroll, control del video y formulario
 assets/video/       Video del hero (versión escritorio y móvil, optimizados)
 assets/img/         Poster del video y favicon
+assets/fonts/       Tipografías self-hosted (woff2, subconjunto latino)
+build-standalone.py Genera la versión de un solo archivo
 ```
 
 ## Cómo verla en local
@@ -57,5 +59,21 @@ mientras carga y en navegadores que bloquean el autoplay.
 
 - Navegación por teclado, `skip link` y foco visible.
 - Respeta `prefers-reduced-motion`: se detienen el video y las animaciones de entrada.
-- Sin dependencias JS externas; solo Google Fonts.
+- Sin dependencias externas: ni JS de terceros ni Google Fonts.
 - Datos estructurados `SoftwareApplication` y metadatos Open Graph.
+
+## Versión en un solo archivo
+
+`python3 build-standalone.py` genera `logity-landing.html`: la página completa
+con CSS, JS, tipografías, poster y video incrustados (≈1,7 MB). Útil para
+compartirla por correo o publicarla sin subir la carpeta `assets/`.
+
+## Tipografías
+
+Self-hosted en `assets/fonts/` (120 KB en total, subconjunto latino):
+
+- **Archivo** — titulares. Grotesca de señalética, apropiada para logística.
+- **IBM Plex Sans** — texto corrido, legible en pantallas densas.
+- **IBM Plex Mono** — datos operativos: tarifas, folios de servicio, KPIs y etiquetas.
+
+No hay llamadas a Google Fonts ni a ningún otro tercero.

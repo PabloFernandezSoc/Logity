@@ -76,9 +76,15 @@
   var video = document.getElementById('heroVideo');
   if (video) {
     if (reduceMotion) {
+      // Con movimiento reducido ni siquiera se descarga: queda el poster.
       video.removeAttribute('autoplay');
       video.pause();
     } else {
+      // Una sola descarga: la versión liviana en pantallas chicas.
+      video.src = window.matchMedia('(max-width: 700px)').matches
+        ? video.dataset.srcMovil
+        : video.dataset.srcEscritorio;
+
       // Algunos navegadores bloquean el autoplay hasta que hay interacción.
       var tryPlay = function () {
         var p = video.play();

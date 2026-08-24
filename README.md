@@ -33,11 +33,21 @@ integraciones y una pregunta del FAQ. Cuando exista, basta con sacar la clase
 index.html          Página completa (una sola página, anclas de navegación)
 styles.css          Estilos y design tokens (:root)
 main.js             Nav móvil, reveal al scroll, control del video y formulario
+robots.txt          Indexación
+sitemap.xml         Mapa del sitio (una URL)
 assets/video/       Video del hero (versión escritorio y móvil, optimizados)
 assets/img/         Poster del video y favicon
 assets/fonts/       Tipografías self-hosted (woff2, subconjunto latino)
 build-standalone.py Genera la versión de un solo archivo
+deploy/             Configuraciones listas de Nginx y Apache
+DEPLOY.md           Cómo publicarlo en un servidor
 ```
+
+## Publicarlo
+
+Ver **[DEPLOY.md](DEPLOY.md)**: qué archivos subir, configuraciones de Nginx y
+Apache listas para usar en `deploy/`, y el checklist previo (dominio, correo de
+contacto y destino del formulario).
 
 ## Cómo verla en local
 

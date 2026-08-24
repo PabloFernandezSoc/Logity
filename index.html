@@ -66,10 +66,13 @@
 <!-- ============ HERO ============ -->
 <section class="hero" id="inicio">
   <div class="hero__media" aria-hidden="true">
-    <video id="heroVideo" class="hero__video" autoplay muted loop playsinline preload="metadata" poster="assets/img/hero-poster.jpg">
-      <source src="assets/video/hero-logity-mobile.mp4" type="video/mp4" media="(max-width: 700px)" />
-      <source src="assets/video/hero-logity.mp4" type="video/mp4" />
-    </video>
+    <!-- La fuente la elige main.js según el ancho de pantalla. El atributo
+         "media" de <source> no se respeta dentro de <video>: el navegador
+         terminaba descargando las dos versiones. Sin JS queda el poster. -->
+    <video id="heroVideo" class="hero__video" autoplay muted loop playsinline preload="metadata"
+           poster="assets/img/hero-poster.jpg"
+           data-src-movil="assets/video/hero-logity-mobile.mp4"
+           data-src-escritorio="assets/video/hero-logity.mp4"></video>
     <div class="hero__scrim"></div>
     <div class="hero__grid"></div>
   </div>

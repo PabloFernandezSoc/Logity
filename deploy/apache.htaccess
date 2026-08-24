@@ -1,0 +1,46 @@
+# Logity — landing page (sitio estático)
+# Copiar como .htaccess en la raíz del sitio (junto a index.html).
+# Requiere mod_deflate, mod_expires y mod_headers habilitados.
+
+DirectoryIndex index.html
+
+# Algunas instalaciones antiguas no reconocen woff2
+<IfModule mod_mime.c>
+  AddType font/woff2 .woff2
+  AddType video/mp4  .mp4
+  AddType image/svg+xml .svg
+</IfModule>
+
+# Comprimir solo lo que comprime bien.
+# El video, las fuentes woff2 y el JPG ya vienen comprimidos: no tocarlos.
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+<IfModule mod_headers.c>
+  # HTML, CSS y JS cambian juntos en cada publicación y no llevan hash en el
+  # nombre: se revalidan siempre, para que un cambio se vea al instante.
+  <FilesMatch "\.(html|css|js)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+
+  Header set X-Content-Type-Options "nosniff"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Los assets llevan contenido estable: caché larga
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType font/woff2    "access plus 1 year"
+  ExpiresByType video/mp4     "access plus 1 year"
+  ExpiresByType image/jpeg    "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  # CSS y JS quedan fuera a propósito: los revalida el bloque de arriba.
+</IfModule>
+
+# Forzar HTTPS (descomentar cuando el certificado esté instalado)
+# <IfModule mod_rewrite.c>
+#   RewriteEngine On
+#   RewriteCond %{HTTPS} !=on
+#   RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+# </IfModule>

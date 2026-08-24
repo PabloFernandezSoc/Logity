@@ -7,16 +7,19 @@ la gestión de servicios de importación y exportación.
 
 | Sección | Qué comunica |
 |---|---|
-| Hero | Propuesta de valor + video de marca de fondo |
-| Problema | El dolor actual: planillas, correos y falta de una única fuente de verdad |
-| Plataforma | Los dos grandes ejes: portal de clientes + operación |
+| Hero | Propuesta de valor + video de marca de fondo + CTA |
+| Plataforma | Los dos ejes: portal de clientes + operación |
 | Portal de clientes | Visibilidad para los clientes de nuestros clientes |
-| Comercial | Modificación masiva de tarifas, mantenedor de acuerdos, análisis de ventas, trazabilidad |
+| Comercial | Modificación masiva de tarifas, acuerdos comerciales, análisis de ventas, trazabilidad |
 | Operacional | Proyección de carga → coordinación → en curso → finalizado, sala de control y links GPS automáticos |
-| A tu medida | Módulos adaptados a la operación de cada cliente (diagnóstico → configuración → puesta en marcha → evolución) |
-| Beneficios | Seis razones concretas |
-| FAQ | Preguntas frecuentes |
+| A tu medida | Flujos configurables por operación + integraciones (ERP, GPS, navieras, API), con CTA intermedio |
+| Beneficios | Cuatro razones concretas |
+| FAQ | Cuatro preguntas frecuentes |
 | Demo | Formulario de contacto |
+
+El texto es deliberadamente breve: cada sección explica una idea y empuja hacia
+la demo. Hay tres llamados a la acción — hero, franja intermedia y formulario —
+además del botón permanente en la barra de navegación.
 
 ## Estructura
 

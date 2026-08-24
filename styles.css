@@ -270,6 +270,16 @@ strong{ color:#fff; font-weight:600; }
 .integrations h4{ font-size:1rem; margin-bottom:.4rem; color:#fff; }
 .integrations p{ margin:0; font-size:.9rem; color:var(--text-dim); line-height:1.55; }
 
+.integrations li.is-soon{
+  border-style:dashed; border-color:rgba(140,170,255,.24);
+  background:linear-gradient(180deg,rgba(47,107,255,.07),rgba(255,255,255,.02));
+}
+.integrations li.is-soon h4{ color:var(--text-soft); }
+.integrations .chip--soon{
+  display:inline-block; margin-bottom:.6rem;
+  background:rgba(111,227,255,.08); color:var(--cyan); border:1px solid rgba(111,227,255,.28);
+}
+
 /* ---------- franja de CTA ---------- */
 .cta-band{
   margin-top:clamp(32px,4vw,48px);

@@ -1,18 +1,18 @@
 # Logity — Landing page
 
-Landing page de **Logity**, el software integral para operadores logísticos que centraliza
-la gestión de servicios de importación y exportación.
+Landing page de **Logity**, el software que centraliza la operación terrestre de los
+servicios de importación y exportación: retiro, ruta, entrega y devolución.
 
 ## Contenido de la página
 
 | Sección | Qué comunica |
 |---|---|
-| Hero | Propuesta de valor + video de marca de fondo + CTA |
+| Hero | Propuesta de valor (operación terrestre) + video de marca de fondo + CTA |
 | Plataforma | Los dos ejes: portal de clientes + operación |
 | Portal de clientes | Visibilidad para los clientes de nuestros clientes |
 | Comercial | Modificación masiva de tarifas, acuerdos comerciales, análisis de ventas, trazabilidad |
-| Operacional | Proyección de carga → coordinación → en curso → finalizado, sala de control y links GPS automáticos |
-| A tu medida | Flujos configurables por operación + integraciones (ERP, GPS, navieras, API), con CTA intermedio |
+| Operacional | Proyección de carga → coordinación → en curso → finalizado, sala de control y links GPS del camión |
+| A tu medida | Flujos configurables por operación + integraciones (GPS, ERP, API) y la conexión con embarcadoras marcada **En desarrollo**, con CTA intermedio |
 | Beneficios | Cuatro razones concretas |
 | FAQ | Cuatro preguntas frecuentes |
 | Demo | Formulario de contacto |
@@ -20,6 +20,12 @@ la gestión de servicios de importación y exportación.
 El texto es deliberadamente breve: cada sección explica una idea y empuja hacia
 la demo. Hay tres llamados a la acción — hero, franja intermedia y formulario —
 además del botón permanente en la barra de navegación.
+
+El alcance que comunica la página es el **servicio terrestre**. La conexión con
+embarcadoras, para que el cliente final vea el flujo global de su carga, aparece
+en dos lugares y siempre como pendiente: la tarjeta "En desarrollo" de
+integraciones y una pregunta del FAQ. Cuando exista, basta con sacar la clase
+`is-soon` de esa tarjeta y actualizar ambos textos.
 
 ## Estructura
 

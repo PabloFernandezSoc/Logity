@@ -114,9 +114,9 @@ No hay llamadas a Google Fonts ni a ningún otro tercero.
 # Control de Desviaciones
 
 Aplicación interna de LYD Cargo que detecta desviaciones comerciales y de costos
-sobre los servicios de BIT, antes del cierre y la facturación. Consolida dos
-fuentes de datos —la API de BIT y el documento de Google Sheets previo— y avisa
-con notificaciones qué cambió en cada actualización.
+sobre los servicios de BIT, antes del cierre y la facturación. Lee el reporte de
+servicios del ERP, aplica las reglas del PRD y organiza lo que hay que revisar;
+las correcciones las hace el equipo en BIT, la aplicación no escribe de vuelta.
 
 Vive en [`app/`](app/) y también es estática: el build son tres archivos
 (`index.html`, `app.css`, `app.js`) que se copian al mismo servidor que la
@@ -130,5 +130,6 @@ npm run build              # -> app/dist/
 npm run build:standalone   # -> app/dist-standalone/control-desviaciones.html
 ```
 
-Ver **[app/README.md](app/README.md)** para el detalle del mapeo de campos y las
-notificaciones, y **[app/DESPLIEGUE.md](app/DESPLIEGUE.md)** para publicarla.
+Ver **[app/README.md](app/README.md)** para el detalle del mapeo de campos, las
+reglas y las notificaciones, y **[app/DESPLIEGUE.md](app/DESPLIEGUE.md)** para
+publicarla y conectarla con la API.

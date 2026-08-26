@@ -5,3 +5,7 @@ node_modules/
 
 # Generado por build-standalone.py
 logity-landing.html
+
+# Build de la app "Control de Desviaciones" (app/)
+app/dist/
+app/dist-standalone/

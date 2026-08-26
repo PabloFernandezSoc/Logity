@@ -1,15 +1,4 @@
-# Logity
-
-Este repositorio contiene dos sitios independientes, ambos estáticos:
-
-| Carpeta | Qué es |
-|---|---|
-| raíz | **Landing page** de Logity — sin build, se sube tal cual |
-| [`app/`](app/) | **Control de Desviaciones** — aplicación interna de LYD Cargo; se compila a estático con `npm run build` |
-
----
-
-# Landing page
+# Logity — Landing page
 
 Landing page de **Logity**, el software que centraliza la operación terrestre de los
 servicios de importación y exportación: retiro, ruta, entrega y devolución.
@@ -52,7 +41,6 @@ assets/fonts/       Tipografías self-hosted (woff2, subconjunto latino)
 build-standalone.py Genera la versión de un solo archivo
 deploy/             Configuraciones listas de Nginx y Apache
 DEPLOY.md           Cómo publicarlo en un servidor
-app/                Aplicación "Control de Desviaciones" (ver app/README.md)
 ```
 
 ## Publicarlo
@@ -108,28 +96,3 @@ Self-hosted en `assets/fonts/` (120 KB en total, subconjunto latino):
 - **IBM Plex Mono** — datos operativos: tarifas, folios de servicio, KPIs y etiquetas.
 
 No hay llamadas a Google Fonts ni a ningún otro tercero.
-
----
-
-# Control de Desviaciones
-
-Aplicación interna de LYD Cargo que detecta desviaciones comerciales y de costos
-sobre los servicios de BIT, antes del cierre y la facturación. Lee el reporte de
-servicios del ERP, aplica las reglas del PRD y organiza lo que hay que revisar;
-las correcciones las hace el equipo en BIT, la aplicación no escribe de vuelta.
-
-Vive en [`app/`](app/) y también es estática: el build son tres archivos
-(`index.html`, `app.css`, `app.js`) que se copian al mismo servidor que la
-landing, por ejemplo en `/control-desviaciones/`. También se puede generar como
-un HTML único autocontenido.
-
-```bash
-cd app
-npm install
-npm run build              # -> app/dist/
-npm run build:standalone   # -> app/dist-standalone/control-desviaciones.html
-```
-
-Ver **[app/README.md](app/README.md)** para el detalle del mapeo de campos, las
-reglas y las notificaciones, y **[app/DESPLIEGUE.md](app/DESPLIEGUE.md)** para
-publicarla y conectarla con la API.

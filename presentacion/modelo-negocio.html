@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<title>Logity · Tres formas de entrar</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
+<style>
+/* =========================================================
+   Logity — deck de modelo de negocio
+   Identidad tomada de la landing: azul eléctrico sobre negro,
+   Archivo (títulos) + IBM Plex Sans (cuerpo) + Plex Mono (datos).
+   Mundo visual único y deliberado: todo se pinta explícito.
+   ========================================================= */
+:root{
+  color-scheme: dark;
+
+  --bg:          #04060d;
+  --bg-2:        #070b16;
+  --surface:     rgba(255,255,255,.038);
+  --surface-2:   rgba(255,255,255,.065);
+  --line:        rgba(140,170,255,.15);
+  --line-2:      rgba(140,170,255,.32);
+
+  --text:        #e9eefb;
+  --soft:        #a9b6d4;
+  --dim:         #7887a8;
+
+  --blue:        #2f6bff;
+  --blue-br:     #4f8cff;
+  --cyan:        #6fe3ff;
+  --violet:      #9b8bff;
+
+  --ok:          #45d6a5;
+  --warn:        #ffb648;
+
+  /* un acento por perfil: la escala fría es la escala de madurez */
+  --p1:          #6fe3ff;
+  --p2:          #4f8cff;
+  --p3:          #9b8bff;
+
+  --ff-d: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --ff-b: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ff-m: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 620px at 78% -12%, rgba(47,107,255,.20), transparent 62%),
+    radial-gradient(760px 460px at 6% 104%, rgba(111,227,255,.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--ff-b);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;
+}
+h1,h2,h3,h4{ font-family:var(--ff-d); margin:0; line-height:1.08; letter-spacing:-.025em; font-weight:700; text-wrap:balance; }
+p{ margin:0; }
+ul,ol{ margin:0; padding:0; list-style:none; }
+strong{ color:#fff; font-weight:600; }
+em{ font-style:normal; color:var(--soft); }
+button{ font:inherit; color:inherit; }
+:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; border-radius:6px; }
+
+/* ---------- marco de la app ---------- */
+.app{ display:flex; flex-direction:column; min-height:100dvh; }
+
+.topbar{
+  display:flex; align-items:center; gap:18px;
+  padding:14px 22px; border-bottom:1px solid var(--line);
+  background:rgba(4,6,13,.72); backdrop-filter:blur(10px);
+  position:sticky; top:0; z-index:40;
+}
+.brand{ display:flex; align-items:center; gap:9px; }
+.brand svg{ width:26px; height:26px; display:block; }
+.brand b{ font-family:var(--ff-d); font-weight:700; font-size:18px; letter-spacing:-.02em; }
+.topbar__meta{
+  font-family:var(--ff-m); font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--dim); margin-left:4px; padding-left:16px; border-left:1px solid var(--line);
+}
+.topbar__sp{ flex:1; }
+.tbtn{
+  background:var(--surface); border:1px solid var(--line); color:var(--soft);
+  border-radius:9px; padding:7px 13px; font-size:13px; cursor:pointer;
+  transition:background .18s, color .18s, border-color .18s;
+}
+.tbtn:hover{ background:var(--surface-2); color:var(--text); border-color:var(--line-2); }
+.count{ font-family:var(--ff-m); font-size:13px; color:var(--soft); letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+.count i{ color:var(--dim); font-style:normal; }
+
+/* ---------- escenario 16:9 ---------- */
+.deck{ flex:1; display:grid; place-items:center; padding:26px 22px 12px; }
+.stage{
+  width:min(100%, (100dvh - 176px) * 16 / 9);
+  max-width:1360px;
+  aspect-ratio:16/9;
+  position:relative;
+  container-type:size;
+}
+.slide{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  padding:4.4cqw 5cqw 3.6cqw;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.012) 42%, transparent),
+    var(--bg-2);
+  box-shadow:0 30px 90px -46px rgba(0,14,70,.95);
+  overflow:hidden;
+  opacity:0; visibility:hidden; transform:translateY(10px);
+  transition:opacity .32s ease, transform .32s ease, visibility .32s;
+}
+.slide.is-active{ opacity:1; visibility:visible; transform:none; }
+/* el número de lámina, en el canto */
+.slide::after{
+  content:attr(data-n);
+  position:absolute; right:2.4cqw; bottom:1.8cqw;
+  font-family:var(--ff-m); font-size:1.5cqw; color:var(--dim); letter-spacing:.1em;
+}
+
+/* ---------- tipografía dentro de la lámina ---------- */
+.eyebrow{
+  font-family:var(--ff-m); font-size:1.32cqw; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--cyan); margin-bottom:1.1cqw;
+}
+.eyebrow.is-p1{ color:var(--p1); } .eyebrow.is-p2{ color:var(--p2); } .eyebrow.is-p3{ color:var(--p3); }
+.t1{ font-size:5.6cqw; font-weight:800; letter-spacing:-.035em; }
+.t2{ font-size:3.25cqw; }
+.t3{ font-size:1.95cqw; font-weight:600; }
+.lead{ font-size:1.52cqw; color:var(--soft); line-height:1.5; max-width:62ch; }
+.body{ font-size:1.36cqw; color:var(--soft); line-height:1.55; }
+.mini{ font-size:1.18cqw; color:var(--dim); line-height:1.5; }
+.mono{ font-family:var(--ff-m); font-variant-numeric:tabular-nums; }
+.grad{ background:linear-gradient(96deg, var(--cyan), var(--blue-br) 46%, var(--violet)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.head{ margin-bottom:2.3cqw; }
+.head .lead{ margin-top:1cqw; }
+
+/* ---------- retículas ---------- */
+.cols{ display:grid; gap:1.5cqw; }
+.c2{ grid-template-columns:repeat(2,1fr); }
+.c3{ grid-template-columns:repeat(3,1fr); }
+.c4{ grid-template-columns:repeat(4,1fr); }
+.fill{ flex:1; align-content:center; }
+.split{ display:grid; grid-template-columns:1.05fr 1fr; gap:3.4cqw; flex:1; align-items:start; }
+
+/* ---------- piezas ---------- */
+.card{
+  border:1px solid var(--line); border-radius:14px; padding:1.6cqw 1.55cqw;
+  background:var(--surface); display:flex; flex-direction:column; gap:.8cqw;
+}
+.card h4{ font-size:1.6cqw; font-weight:600; }
+.card p{ font-size:1.24cqw; color:var(--soft); line-height:1.44; }
+
+/* tarjeta de perfil: la barra superior es el código de color del segmento */
+.pcard{ position:relative; border-top-width:2px; border-top-color:var(--ac,var(--blue-br)); }
+.pcard .tag{
+  font-family:var(--ff-m); font-size:1.1cqw; letter-spacing:.16em; text-transform:uppercase; color:var(--ac);
+}
+
+.list{ display:flex; flex-direction:column; gap:.8cqw; }
+.list li{ font-size:1.32cqw; color:var(--soft); line-height:1.45; padding-left:1.9cqw; position:relative; }
+.list li::before{
+  content:""; position:absolute; left:0; top:.62cqw;
+  width:.62cqw; height:.62cqw; border-radius:50%;
+  background:var(--ac,var(--blue-br));
+}
+.list.is-x li::before{ background:none; content:"×"; color:var(--warn); top:-.05cqw; left:.1cqw; font-size:1.5cqw; line-height:1; }
+.list.is-ok li::before{ background:none; content:"✓"; color:var(--ok); top:-.05cqw; left:0; font-size:1.3cqw; line-height:1.2; }
+
+.kv{ display:grid; grid-template-columns:auto 1fr; gap:.7cqw 1.4cqw; align-items:baseline; }
+.kv dt{ font-family:var(--ff-m); font-size:1.06cqw; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); white-space:nowrap; }
+.kv dd{ margin:0; font-size:1.3cqw; color:var(--text); }
+
+.chip{
+  display:inline-flex; align-items:center; gap:.5cqw;
+  font-family:var(--ff-m); font-size:1.06cqw; letter-spacing:.09em;
+  border:1px solid var(--line-2); border-radius:999px; padding:.42cqw 1cqw; color:var(--soft);
+  background:rgba(255,255,255,.03);
+}
+.chip b{ color:var(--ac,var(--cyan)); font-weight:500; }
+.chips{ display:flex; flex-wrap:wrap; gap:.7cqw; }
+
+.stat{ display:flex; flex-direction:column; gap:.35cqw; }
+.stat b{ font-family:var(--ff-d); font-size:2.4cqw; font-weight:700; color:var(--ac,var(--text)); letter-spacing:-.03em; line-height:1; }
+.stat span{ font-size:1.14cqw; color:var(--dim); }
+
+/* tabla comparativa */
+.tblwrap{ overflow-x:auto; flex:1; }
+table{ width:100%; border-collapse:collapse; }
+th,td{ text-align:left; padding:1.05cqw 1.2cqw; vertical-align:top; font-size:1.16cqw; line-height:1.42; }
+thead th{
+  font-family:var(--ff-m); font-size:1.04cqw; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--dim); border-bottom:1px solid var(--line-2); font-weight:400;
+}
+thead th.p1{ color:var(--p1); } thead th.p2{ color:var(--p2); } thead th.p3{ color:var(--p3); }
+tbody tr{ border-bottom:1px solid var(--line); }
+tbody tr:last-child{ border-bottom:0; }
+tbody th{
+  font-family:var(--ff-m); font-weight:400; font-size:1.02cqw; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--dim); white-space:nowrap; width:1%;
+}
+td{ color:var(--soft); }
+td strong{ display:block; color:var(--text); font-weight:600; margin-bottom:.18cqw; }
+
+/* pasos numerados: se usan sólo donde el orden es real */
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:1.3cqw; }
+.step{ border-top:1px solid var(--line-2); padding-top:1.2cqw; display:flex; flex-direction:column; gap:.55cqw; }
+.step .n{ font-family:var(--ff-m); font-size:1.1cqw; color:var(--ac,var(--blue-br)); letter-spacing:.12em; }
+.step h4{ font-size:1.5cqw; font-weight:600; }
+.step p{ font-size:1.16cqw; color:var(--dim); line-height:1.45; }
+
+/* barra de expansión (land & expand) */
+.ladder{ display:flex; align-items:stretch; gap:1cqw; }
+.rung{
+  flex:1; border:1px solid var(--line); border-radius:12px; padding:1.5cqw;
+  background:var(--surface); display:flex; flex-direction:column; gap:.6cqw;
+  border-left:2px solid var(--ac);
+}
+.rung .amt{ font-family:var(--ff-m); font-size:1.1cqw; color:var(--ac); letter-spacing:.1em; }
+.arrow{ display:grid; place-items:center; color:var(--dim); font-size:1.6cqw; }
+
+.note{
+  border-left:2px solid var(--warn); padding:.5cqw 0 .5cqw 1.2cqw;
+  font-size:1.16cqw; color:var(--dim); line-height:1.45;
+}
+
+/* portada */
+.cover{ justify-content:center; gap:2.6cqw; }
+.cover .t1{ max-width:19ch; }
+.cover__foot{ display:flex; align-items:center; gap:1.6cqw; border-top:1px solid var(--line); padding-top:1.8cqw; }
+
+/* ---------- controles ---------- */
+.controls{
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  padding:8px 22px 20px;
+}
+.nbtn{
+  width:40px; height:40px; border-radius:11px; cursor:pointer;
+  background:var(--surface); border:1px solid var(--line); color:var(--soft);
+  display:grid; place-items:center; font-size:17px; line-height:1;
+  transition:background .18s, color .18s, border-color .18s;
+}
+.nbtn:hover:not(:disabled){ background:var(--surface-2); color:#fff; border-color:var(--line-2); }
+.nbtn:disabled{ opacity:.3; cursor:not-allowed; }
+.dots{ display:flex; gap:6px; }
+.dot{
+  width:9px; height:9px; padding:0; border-radius:50%; cursor:pointer;
+  background:rgba(140,170,255,.22); border:0; transition:background .2s, transform .2s;
+}
+.dot:hover{ background:rgba(140,170,255,.5); }
+.dot.is-on{ background:var(--blue-br); transform:scale(1.28); }
+
+/* índice */
+.index{
+  position:fixed; inset:0 0 0 auto; width:min(400px,86vw); z-index:60;
+  background:var(--bg-2); border-left:1px solid var(--line-2);
+  padding:22px; overflow-y:auto;
+  box-shadow:-30px 0 80px -40px rgba(0,0,0,.9);
+  transform:translateX(100%); transition:transform .28s ease;
+}
+.index.is-open{ transform:none; }
+.index h3{ font-size:14px; font-family:var(--ff-m); font-weight:400; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin-bottom:16px; }
+.index ol{ display:flex; flex-direction:column; gap:2px; }
+.index button{
+  width:100%; text-align:left; background:none; border:0; cursor:pointer;
+  padding:9px 10px; border-radius:8px; color:var(--soft); font-size:14.5px;
+  display:flex; gap:12px; align-items:baseline;
+}
+.index button:hover{ background:var(--surface); color:var(--text); }
+.index button.is-on{ background:var(--surface-2); color:#fff; }
+.index button span{ font-family:var(--ff-m); font-size:12px; color:var(--dim); }
+.scrim{ position:fixed; inset:0; background:rgba(2,4,10,.66); z-index:55; }
+[hidden]{ display:none !important; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}
+
+/* ---------- móvil: el deck se lee como documento ---------- */
+@media (max-width:900px){
+  .deck{ padding:16px 14px 30px; }
+  .stage{ width:100%; aspect-ratio:auto; container-type:normal; display:flex; flex-direction:column; gap:16px; }
+  .slide{
+    position:static; opacity:1; visibility:visible; transform:none;
+    padding:26px 20px 34px; font-size:15px;
+  }
+  .slide::after{ right:16px; bottom:12px; font-size:11px; }
+  .eyebrow{ font-size:11px; margin-bottom:10px; }
+  .t1{ font-size:34px; } .t2{ font-size:25px; } .t3{ font-size:17px; }
+  .lead{ font-size:15px; margin-top:10px; } .body{ font-size:14px; } .mini{ font-size:13px; }
+  .head{ margin-bottom:20px; }
+  .cols{ gap:14px; } .c2,.c3,.c4,.steps,.split,.ladder{ grid-template-columns:1fr; display:grid; }
+  .arrow{ display:none; }
+  .card{ padding:16px; gap:8px; border-radius:12px; }
+  .card h4{ font-size:16px; } .card p{ font-size:14px; }
+  .pcard .tag,.chip,.rung .amt,.step .n{ font-size:11.5px; }
+  .list li{ font-size:14px; padding-left:18px; }
+  .list li::before{ width:6px; height:6px; top:8px; }
+  .list.is-x li::before,.list.is-ok li::before{ font-size:14px; top:0; }
+  .kv dt{ font-size:11px; } .kv dd{ font-size:14px; }
+  .stat b{ font-size:30px; } .stat span{ font-size:12.5px; }
+  .step h4{ font-size:16px; } .step p{ font-size:13.5px; }
+  .note{ font-size:13px; padding-left:12px; }
+  th,td{ font-size:12.5px; padding:9px 10px; } thead th,tbody th{ font-size:11px; }
+  .controls{ display:none; }
+  .topbar{ padding:11px 14px; gap:10px; }
+  .topbar__meta,.count{ display:none; }
+}
+
+/* ---------- impresión: una lámina por página apaisada ---------- */
+@media print{
+  @page{ size:1280px 720px; margin:0; }
+  body{ background:#04060d; }
+  .topbar,.controls,.index,.scrim{ display:none !important; }
+  .deck{ padding:0; display:block; }
+  .stage{ width:1280px; max-width:none; aspect-ratio:auto; container-type:normal; display:block; }
+  .slide{
+    position:static; opacity:1 !important; visibility:visible !important; transform:none !important;
+    width:1280px; height:720px; border-radius:0; border:0;
+    page-break-after:always; break-after:page;
+  }
+}
+</style>
+
+<div class="app">
+
+<header class="topbar">
+  <span class="brand">
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 22.5c5.4 0 8.3-3.1 11-6.5S22.6 9.5 27 9.5" stroke="#6ea8ff" stroke-width="3" stroke-linecap="round"/><path d="M5 9.5c4.4 0 6.3 2.6 9 6s5.6 7 11 7" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" opacity=".55"/></svg>
+    <b>Logity</b>
+  </span>
+  <span class="topbar__meta">Modelo de negocio · Segmentación comercial</span>
+  <span class="topbar__sp"></span>
+  <span class="count" id="count" aria-live="polite">01 <i>/ 14</i></span>
+  <button class="tbtn" id="btnIndex" aria-expanded="false" aria-controls="index">Índice</button>
+  <button class="tbtn" id="btnPrint">Exportar PDF</button>
+</header>
+
+<div class="deck">
+<div class="stage" id="stage">
+
+<!-- 01 · PORTADA -->
+<article class="slide cover is-active" data-n="01" data-title="Portada">
+  <p class="eyebrow">Modelo de negocio · Logity</p>
+  <h1 class="t1">Una plataforma,<br /><span class="grad">tres formas de entrar</span></h1>
+  <p class="lead">El producto es el mismo para todos: la operación terrestre de importación y exportación, de la proyección de carga a la devolución del equipo. Lo que cambia según el tamaño del cliente es <strong>por dónde entramos, qué le cobramos y qué le prometemos</strong>.</p>
+  <div class="chips">
+    <span class="chip" style="--ac:var(--p1)"><b>A</b> Quiere escalar</span>
+    <span class="chip" style="--ac:var(--p2)"><b>B</b> Quiere potenciar o ahorrar</span>
+    <span class="chip" style="--ac:var(--p3)"><b>C</b> Quiere integrar</span>
+  </div>
+  <div class="cover__foot">
+    <p class="mini mono">Transporte de contenedores · Operadores logísticos · Agencias de aduana · Extraportuarios · Flota propia y subcontratada</p>
+  </div>
+</article>
+
+<!-- 02 · QUÉ VENDEMOS -->
+<article class="slide" data-n="02" data-title="Qué vendemos, siempre lo mismo">
+  <header class="head">
+    <p class="eyebrow">Punto de partida</p>
+    <h2 class="t2">Lo que vendemos no cambia. Cambia el orden.</h2>
+    <p class="lead">Dos ejes sobre la misma información: lo que ven los clientes de nuestro cliente, y lo que mueve su operación.</p>
+  </header>
+
+  <div class="cols c2 fill">
+    <article class="card pcard" style="--ac:var(--cyan)">
+      <span class="tag">Eje 1</span>
+      <h4>Portal de clientes</h4>
+      <p>El importador o exportador entra y ve su carga: etapa, fechas, documentos y la posición del camión. Es la parte que se muestra en una demo y se entiende sola.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--blue-br)">
+      <span class="tag">Eje 2</span>
+      <h4>La operación</h4>
+      <p><strong>Comercial:</strong> tarifas masivas, acuerdos, recargos y margen. <strong>Operacional:</strong> coordinación, sala de control y devoluciones. Es la parte que hace que el cliente no se vaya.</p>
+    </article>
+  </div>
+
+  <ol class="steps" style="margin-top:2.4cqw">
+    <li class="step"><span class="n">01</span><h4>Proyección</h4><p>Volumen comprometido y capacidad de flota, antes de que exista el servicio.</p></li>
+    <li class="step"><span class="n">02</span><h4>Coordinación</h4><p>Retiro, camión, chofer, documentos y proveedores, con responsable y fecha.</p></li>
+    <li class="step"><span class="n">03</span><h4>En curso</h4><p>Camión en ruta, hitos cumplidos, desvíos y GPS visible para el cliente.</p></li>
+    <li class="step"><span class="n">04</span><h4>Finalizado</h4><p>Entrega, devolución del vacío, documentación, costos y margen real.</p></li>
+  </ol>
+</article>
+
+<!-- 03 · LAS TRES PALANCAS DEL MODELO -->
+<article class="slide" data-n="03" data-title="Las tres palancas del modelo">
+  <header class="head">
+    <p class="eyebrow">El modelo</p>
+    <h2 class="t2">Modular, configurable, integrable</h2>
+    <p class="lead">Las tres características del producto son, en la práctica, las tres puertas de entrada comerciales. Cada perfil de cliente compra por una distinta.</p>
+  </header>
+
+  <div class="cols c3 fill">
+    <article class="card pcard" style="--ac:var(--p1)">
+      <span class="tag">Palanca 1 · Modular</span>
+      <h4>Se contrata lo que aprieta hoy</h4>
+      <p>No hay que comprar la plataforma completa para partir. El cliente entra por su dolor más caro y suma módulos cuando el volumen lo pide.</p>
+      <p class="mini" style="margin-top:auto">Vende a quien no tiene presupuesto para un proyecto grande.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--p2)">
+      <span class="tag">Palanca 2 · Configurable</span>
+      <h4>Flujos, estados y campos a medida</h4>
+      <p>Adaptamos los módulos a su forma de operar en vez de pedirle que cambie su forma de operar. Ahí perdemos contra nadie: el software genérico no lo hace.</p>
+      <p class="mini" style="margin-top:auto">Vende a quien ya tiene sistema y no le calza.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--p3)">
+      <span class="tag">Palanca 3 · Integrable</span>
+      <h4>GPS, ERP, API y archivos</h4>
+      <p>Convivimos con lo que ya está instalado. Podemos ser la capa que falta en vez del sistema que reemplaza.</p>
+      <p class="mini" style="margin-top:auto">Vende a quien jamás va a botar su ERP.</p>
+    </article>
+  </div>
+</article>
+
+<!-- 04 · MAPA DE SEGMENTOS -->
+<article class="slide" data-n="04" data-title="Mapa de los tres perfiles">
+  <header class="head">
+    <p class="eyebrow">Segmentación</p>
+    <h2 class="t2">Los tres perfiles, lado a lado</h2>
+  </header>
+
+  <div class="tblwrap">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th class="p1">A · Quiere escalar</th>
+          <th class="p2">B · Quiere potenciar o ahorrar</th>
+          <th class="p3">C · Quiere integrar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Perfil</th>
+          <td><strong>Operación chica en crecimiento</strong>Flota propia acotada más subcontratistas. Todo pasa por una o dos personas.</td>
+          <td><strong>Operación media consolidada</strong>Volumen estable, equipo comercial y de operaciones separados.</td>
+          <td><strong>Gran operador o cadena logística</strong>Varias sucursales, TI propio, ERP corporativo.</td>
+        </tr>
+        <tr>
+          <th scope="row">Hoy opera con</th>
+          <td>Planillas, WhatsApp y correo. Nada consolidado.</td>
+          <td>Un TMS parcial o software genérico caro, más planillas paralelas para lo que el sistema no cubre.</td>
+          <td>ERP y sistemas propios que no se van a mover. Procesos formalizados.</td>
+        </tr>
+        <tr>
+          <th scope="row">Lo que le duele</th>
+          <td>El cliente llama para preguntar dónde va la carga. No sabe si ganó plata hasta fin de mes.</td>
+          <td>Paga licencias por lo que no usa, no tiene portal, las tarifas se cambian a mano y el soporte demora.</td>
+          <td>Los cachos de borde: subcontratistas fuera del sistema, GPS de terceros, devoluciones de vacío, documentos sueltos.</td>
+        </tr>
+        <tr>
+          <th scope="row">Entramos por</th>
+          <td><strong>Operacional + Portal</strong>Que deje de operar en planillas y el cliente se atienda solo.</td>
+          <td><strong>Comercial</strong>Tarifas masivas, acuerdos y margen a la vista. Ahí el ahorro se calcula.</td>
+          <td><strong>Integración o módulo puntual</strong>Piloto acotado en una sucursal, ruta o proceso.</td>
+        </tr>
+        <tr>
+          <th scope="row">Cómo se cobra</th>
+          <td>Suscripción baja por módulo + usuarios. Implementación liviana.</td>
+          <td>Suscripción por módulos + volumen de servicios. Se compara contra lo que ya paga.</td>
+          <td>Proyecto de integración + suscripción por conector y por portal. SLA aparte.</td>
+        </tr>
+        <tr>
+          <th scope="row">Ciclo de venta</th>
+          <td>Corto. Decide el dueño en la demo.</td>
+          <td>Medio. Decide gerencia con el número de ahorro en la mano.</td>
+          <td>Largo. Pasa por TI, seguridad y compras.</td>
+        </tr>
+        <tr>
+          <th scope="row">Riesgo principal</th>
+          <td>Que no tenga disciplina de datos y abandone la carga inicial.</td>
+          <td>Que quede a medias entre dos sistemas y termine con doble digitación.</td>
+          <td>Que el piloto quede huérfano cuando cambia la prioridad de TI.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</article>
+
+<!-- 05 · PERFIL A -->
+<article class="slide" data-n="05" data-title="A · El que quiere escalar">
+  <header class="head">
+    <p class="eyebrow is-p1">Perfil A · Quiere escalar</p>
+    <h2 class="t2">Creció más rápido que sus planillas</h2>
+    <p class="lead">Mueve más servicios de los que puede seguir de memoria, pero todavía no tiene sistema. Cada camión nuevo le agrega trabajo administrativo, no capacidad.</p>
+  </header>
+
+  <div class="split" style="--ac:var(--p1)">
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Cómo lo reconoces en la primera reunión</h3>
+      <ul class="list">
+        <li>La programación del día vive en una planilla que edita una sola persona.</li>
+        <li>El estado de la carga se responde por WhatsApp, camión por camión.</li>
+        <li>Las tarifas están en un correo o en la cabeza del dueño.</li>
+        <li>El margen del mes se sabe cuando la contadora cierra, tres semanas después.</li>
+        <li>Nadie sabe cuántos vacíos están pendientes de devolución hasta que llega el cobro por estadía.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Qué le vendemos</h3>
+      <ul class="list is-ok">
+        <li><strong>Operacional:</strong> coordinación y sala de control, para que la operación deje de depender de una persona.</li>
+        <li><strong>Portal de clientes:</strong> el argumento comercial que él no tiene y su competencia tampoco.</li>
+        <li><strong>Links de GPS automáticos</strong> asociados al servicio, sin copiar y pegar.</li>
+      </ul>
+      <div class="note" style="margin-top:1.6cqw">No le vendemos el módulo comercial completo en la primera etapa: encarece la entrada y todavía no lo necesita. Queda como el primer upsell natural.</div>
+    </div>
+  </div>
+</article>
+
+<!-- 06 · PERFIL A · OFERTA -->
+<article class="slide" data-n="06" data-title="A · La oferta y el arranque">
+  <header class="head">
+    <p class="eyebrow is-p1">Perfil A · La oferta</p>
+    <h2 class="t2">Entrada barata, operando en semanas</h2>
+    <p class="lead">La promesa no es "digitalizarse". Es que pueda tomar más carga sin contratar a otra persona para coordinar.</p>
+  </header>
+
+  <div class="cols c3" style="--ac:var(--p1); margin-bottom:1.8cqw">
+    <div class="card">
+      <h4>Paquete Núcleo</h4>
+      <p>Operacional + Portal de clientes. Usuarios acotados, módulos comercial e integraciones desactivados.</p>
+    </div>
+    <div class="card">
+      <h4>Implementación liviana</h4>
+      <p>Configuración de sus estados, sus rutas y sus tipos de equipo. Carga inicial de clientes y tarifas vigentes.</p>
+    </div>
+    <div class="card">
+      <h4>Cobro</h4>
+      <p>Suscripción mensual baja por módulo, con tope de usuarios. Setup único, acotado y visible en la propuesta.</p>
+    </div>
+  </div>
+
+  <ol class="steps" style="--ac:var(--p1)">
+    <li class="step"><span class="n">Semana 1</span><h4>Configuración</h4><p>Estados, rutas, equipos y usuarios sobre su forma real de operar.</p></li>
+    <li class="step"><span class="n">Semana 2</span><h4>Carga de datos</h4><p>Clientes, tarifas vigentes y servicios abiertos.</p></li>
+    <li class="step"><span class="n">Semana 3</span><h4>Operación en paralelo</h4><p>Su planilla sigue viva mientras el equipo toma confianza.</p></li>
+    <li class="step"><span class="n">Semana 4</span><h4>Portal arriba</h4><p>Se abre el acceso a sus dos o tres clientes más ruidosos primero.</p></li>
+  </ol>
+
+  <div class="cols c4" style="--ac:var(--p1); margin-top:1.9cqw">
+    <div class="stat"><b>–1</b><span>persona menos coordinando por teléfono</span></div>
+    <div class="stat"><b>0</b><span>planillas paralelas al cerrar el mes</span></div>
+    <div class="stat"><b>24/7</b><span>estado de la carga sin llamar</span></div>
+    <div class="stat"><b>Mensual</b><span>margen por servicio, no al cierre</span></div>
+  </div>
+</article>
+
+<!-- 07 · PERFIL B -->
+<article class="slide" data-n="07" data-title="B · El que quiere potenciar o ahorrar">
+  <header class="head">
+    <p class="eyebrow is-p2">Perfil B · Quiere potenciar o ahorrar</p>
+    <h2 class="t2">Ya tiene software. Le queda chico o le queda caro.</h2>
+    <p class="lead">Este cliente no compra "un sistema": ya tiene uno. Compra lo que su sistema no hace, o el mismo resultado por menos plata. La conversación es de funcionalidades y de costo, no de digitalización.</p>
+  </header>
+
+  <div class="split" style="--ac:var(--p2)">
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Lo que su sistema actual no le resuelve</h3>
+      <ul class="list is-x">
+        <li>Cambiar cientos de tarifas por ruta, equipo y vigencia sin hacerlo una por una.</li>
+        <li>Acuerdos comerciales con recargos —estadía, porteo, falso flete— vigentes al momento de cotizar.</li>
+        <li>Un portal propio para sus clientes; hoy manda estados por correo.</li>
+        <li>El GPS del camión vinculado al servicio, no en otra pestaña.</li>
+        <li>Margen por servicio, cliente, ejecutivo y ruta durante el mes.</li>
+        <li>Cambios de flujo sin esperar la próxima versión del proveedor.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Las dos jugadas posibles</h3>
+      <div class="card" style="margin-bottom:1.2cqw">
+        <h4>Reemplazo</h4>
+        <p>Si su sistema es genérico y caro, migramos y el argumento es el ahorro neto contra lo que paga hoy en licencias, soporte y horas de desarrollo.</p>
+      </div>
+      <div class="card">
+        <h4>Convivencia</h4>
+        <p>Si su sistema es el ERP contable y funciona, tomamos sólo la operación y el comercial, y le devolvemos costos e ingresos por API. Nadie pierde su sistema.</p>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- 08 · PERFIL B · EL NÚMERO -->
+<article class="slide" data-n="08" data-title="B · Cómo se arma el número">
+  <header class="head">
+    <p class="eyebrow is-p2">Perfil B · La propuesta</p>
+    <h2 class="t2">Aquí se vende con una planilla, no con una demo</h2>
+    <p class="lead">La demo abre la puerta; el cierre es el cuadro de costo actual contra costo con Logity. Hay que pedir los números en la primera reunión.</p>
+  </header>
+
+  <div class="split" style="--ac:var(--p2)">
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Qué sumamos del lado del costo actual</h3>
+      <dl class="kv">
+        <dt>Licencias</dt><dd>Valor mensual por usuario y módulos que sí usa</dd>
+        <dt>Soporte</dt><dd>Contrato de mantención y bolsas de horas</dd>
+        <dt>Desarrollos</dt><dd>Lo que le cobran por cada cambio de flujo</dd>
+        <dt>Terceros</dt><dd>Plataforma de GPS, herramientas de seguimiento, licencias de planillas</dd>
+        <dt>Horas</dt><dd>Tiempo del equipo en digitación doble y en responder consultas</dd>
+      </dl>
+      <div class="note" style="margin-top:1.4cqw">Los montos se completan con los datos reales del prospecto: el cliente conoce su factura mejor que nosotros.</div>
+    </div>
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Qué ofrecemos a cambio</h3>
+      <ul class="list is-ok">
+        <li><strong>Módulo comercial completo</strong> — tarifas masivas, acuerdos, análisis de venta y trazabilidad de quién cambió qué.</li>
+        <li><strong>Portal incluido</strong>, no como extra que se cotiza aparte.</li>
+        <li><strong>Configuración de flujos</strong> dentro del servicio, sin cobrar cada cambio como proyecto.</li>
+        <li><strong>Migración</strong> de clientes, tarifas y servicios abiertos.</li>
+        <li><strong>Convivencia con el ERP</strong> por API o archivos, si decide no reemplazarlo.</li>
+      </ul>
+      <div class="chips" style="margin-top:1.6cqw">
+        <span class="chip" style="--ac:var(--p2)">Primer módulo: <b>Comercial</b></span>
+        <span class="chip" style="--ac:var(--p2)">Upsell: <b>Operacional + Sala de control</b></span>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- 09 · PERFIL C -->
+<article class="slide" data-n="09" data-title="C · El que quiere integrar">
+  <header class="head">
+    <p class="eyebrow is-p3">Perfil C · Quiere integrar</p>
+    <h2 class="t2">No venimos a reemplazar su ERP. Venimos a tapar los hoyos.</h2>
+    <p class="lead">Ya tiene sistemas, TI y proveedores. Proponerle un cambio de plataforma es perder la reunión: la venta es por el borde, lo que su sistema corporativo nunca va a cubrir bien.</p>
+  </header>
+
+  <div class="cols c3 fill" style="--ac:var(--p3)">
+    <article class="card pcard" style="--ac:var(--p3)">
+      <span class="tag">Modo 1</span>
+      <h4>Capa de visibilidad</h4>
+      <p>Su data sigue en su sistema. Logity aporta el portal para sus clientes y el seguimiento del camión, alimentado por API.</p>
+      <p class="mini" style="margin-top:auto">Se vende al área comercial: es cara al cliente final.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--p3)">
+      <span class="tag">Modo 2</span>
+      <h4>Módulo puntual</h4>
+      <p>Tomamos un proceso completo que su ERP hace mal: tarifas masivas, control de devoluciones de vacío, coordinación de subcontratistas.</p>
+      <p class="mini" style="margin-top:auto">Se vende a operaciones: resuelve un cacho concreto y medible.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--p3)">
+      <span class="tag">Modo 3</span>
+      <h4>Integración entre partes</h4>
+      <p>Quedamos en medio de sus sistemas, sus proveedores GPS y sus transportistas externos, normalizando datos y documentos.</p>
+      <p class="mini" style="margin-top:auto">Se vende a TI: les saca trabajo de encima en vez de agregarles otro proyecto.</p>
+    </article>
+  </div>
+
+  <div class="note" style="margin-top:1.5cqw">Los cachos que más se repiten aquí: el subcontratista que no está en ningún sistema, el GPS que es de otra empresa, la devolución del vacío que aparece cuando ya corrió la estadía, y el cliente final que pide estado por teléfono.</div>
+</article>
+
+<!-- 10 · PERFIL C · CÓMO SE ENTRA -->
+<article class="slide" data-n="10" data-title="C · Piloto, gobernanza y cobro">
+  <header class="head">
+    <p class="eyebrow is-p3">Perfil C · Cómo se entra</p>
+    <h2 class="t2">Piloto acotado, con dueño y con fecha</h2>
+    <p class="lead">En este perfil la venta grande se pierde por falta de foco. El objetivo de la primera propuesta no es la cuenta completa: es un piloto que no se pueda discutir.</p>
+  </header>
+
+  <div class="split" style="--ac:var(--p3)">
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Cómo se arma el piloto</h3>
+      <ul class="list">
+        <li><strong>Un alcance:</strong> una sucursal, un cliente grande o una ruta.</li>
+        <li><strong>Un dueño del lado del cliente,</strong> con nombre y con tiempo asignado.</li>
+        <li><strong>Un indicador acordado antes de partir:</strong> consultas al ejecutivo, días de devolución de vacío, servicios sin documentación.</li>
+        <li><strong>Una fecha de evaluación</strong> y qué pasa si el número se cumple.</li>
+      </ul>
+      <h3 class="t3" style="margin:1.6cqw 0 1cqw">Lo que TI va a preguntar</h3>
+      <p class="body">Ambientes, accesos por empresa, manejo de datos, formato de intercambio —API o archivos— y quién responde cuando algo falla. Conviene llevarlo resuelto a la reunión técnica.</p>
+    </div>
+    <div>
+      <h3 class="t3" style="margin-bottom:1.3cqw">Estructura de cobro</h3>
+      <dl class="kv">
+        <dt>Proyecto</dt><dd>Integración y configuración inicial, pagada una vez</dd>
+        <dt>Suscripción</dt><dd>Por módulo activo y por conector en producción</dd>
+        <dt>Portal</dt><dd>Según empresas y usuarios con acceso</dd>
+        <dt>Soporte</dt><dd>Nivel de servicio acordado, aparte de la suscripción</dd>
+        <dt>Cambios</dt><dd>Bolsa de horas de configuración, con saldo visible</dd>
+      </dl>
+      <div class="note" style="margin-top:1.4cqw">Ticket más alto y ciclo más largo: hay que dimensionar el esfuerzo comercial para que no consuma el tiempo que sostiene a los perfiles A y B.</div>
+    </div>
+  </div>
+</article>
+
+<!-- 11 · LAND & EXPAND -->
+<article class="slide" data-n="11" data-title="La ruta de expansión">
+  <header class="head">
+    <p class="eyebrow">Crecimiento de la cuenta</p>
+    <h2 class="t2">Entramos por un módulo y crecemos con la operación</h2>
+    <p class="lead">El mismo cliente cambia de perfil con el tiempo. La entrada barata del perfil A se convierte en una cuenta de perfil B en dos o tres años, si el producto acompañó el crecimiento.</p>
+  </header>
+
+  <div class="ladder fill">
+    <div class="rung" style="--ac:var(--p1)">
+      <span class="amt">Entrada</span>
+      <h3 class="t3">Un módulo</h3>
+      <p class="body">Operacional o Comercial, según el dolor. Pocos usuarios, implementación corta.</p>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="rung" style="--ac:var(--p2)">
+      <span class="amt">Expansión 1</span>
+      <h3 class="t3">Más usuarios</h3>
+      <p class="body">Entra el resto del equipo comercial y de operaciones. Sube el consumo sin nueva venta.</p>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="rung" style="--ac:var(--p2)">
+      <span class="amt">Expansión 2</span>
+      <h3 class="t3">El otro eje</h3>
+      <p class="body">Quien entró por operación suma comercial, y al revés. Aquí aparece el margen a la vista.</p>
+    </div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="rung" style="--ac:var(--p3)">
+      <span class="amt">Expansión 3</span>
+      <h3 class="t3">Integraciones</h3>
+      <p class="body">GPS, ERP y API. Cada conector es recurrencia nueva y, sobre todo, cuesta más irse.</p>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:2.2cqw">La conexión con embarcadoras, hoy en desarrollo, es la próxima palanca de expansión: cuando el portal muestre también el tramo marítimo, el argumento sube de "seguimiento del camión" a "flujo global de la carga" en los tres perfiles.</div>
+</article>
+
+<!-- 12 · ESTRUCTURA DE PRECIOS -->
+<article class="slide" data-n="12" data-title="Estructura de precios">
+  <header class="head">
+    <p class="eyebrow">Comercial</p>
+    <h2 class="t2">Cinco componentes, tres combinaciones</h2>
+    <p class="lead">El precio se arma siempre con las mismas piezas. Lo que cambia entre perfiles es cuáles se activan y cuál pesa más en la propuesta.</p>
+  </header>
+
+  <div class="tblwrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Componente</th>
+          <th class="p1">A · Escalar</th>
+          <th class="p2">B · Potenciar</th>
+          <th class="p3">C · Integrar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><th scope="row">Implementación</th><td>Liviana, monto acotado</td><td>Media, incluye migración de datos</td><td>Proyecto: es la parte más pesada</td></tr>
+        <tr><th scope="row">Suscripción por módulo</th><td>Uno o dos módulos</td><td>Plataforma completa</td><td>Sólo los módulos del alcance</td></tr>
+        <tr><th scope="row">Usuarios</th><td>Tope bajo, crece con la operación</td><td>Por equipo, con tramos</td><td>Por sucursal o unidad de negocio</td></tr>
+        <tr><th scope="row">Volumen de servicios</th><td>No aplica al inicio</td><td>Tramos mensuales</td><td>Definido en el contrato marco</td></tr>
+        <tr><th scope="row">Integraciones</th><td>Sólo GPS</td><td>GPS y ERP</td><td>Por conector en producción, más SLA</td></tr>
+        <tr><th scope="row">Peso del ticket</th><td><strong>Recurrencia baja, volumen alto de cuentas</strong>El negocio es la cantidad y la renovación.</td><td><strong>Recurrencia media, cuentas estables</strong>El negocio es el reemplazo y la expansión.</td><td><strong>Proyecto alto, recurrencia por conector</strong>El negocio es la permanencia.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note" style="margin-top:1.8cqw">Los montos de cada componente se definen en la lista de precios interna y no van en esta presentación: lo que se muestra al cliente es la estructura, para que entienda por qué su propuesta se ve distinta a la del vecino.</div>
+</article>
+
+<!-- 13 · OBJECIONES -->
+<article class="slide" data-n="13" data-title="Objeciones y respuestas">
+  <header class="head">
+    <p class="eyebrow">Guion de venta</p>
+    <h2 class="t2">La objeción que trae cada perfil</h2>
+    <p class="lead">Son distintas y se contestan distinto. Contestar la de A cuando el que está al frente es C es la forma más rápida de perder la reunión.</p>
+  </header>
+
+  <div class="cols c3 fill">
+    <article class="card pcard" style="--ac:var(--p1)">
+      <span class="tag">A · Escalar</span>
+      <h4>"Somos chicos, todavía no necesitamos un sistema."</h4>
+      <p>Se parte por un módulo y se activa el resto cuando el volumen lo pida. La pregunta de vuelta: cuántas horas al día se van respondiendo dónde va la carga, y qué pasa el día que el que sabe todo se enferma.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--p2)">
+      <span class="tag">B · Potenciar</span>
+      <h4>"Ya invertimos en el sistema que tenemos."</h4>
+      <p>No pedimos botarlo: convivimos con él por API. Y si conviene reemplazarlo, el número es lo que paga hoy en licencias, soporte y desarrollos contra lo que pagaría con nosotros, con el portal incluido.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--p3)">
+      <span class="tag">C · Integrar</span>
+      <h4>"Esto tiene que pasar por TI y no hay capacidad este año."</h4>
+      <p>Por eso el alcance es un piloto en una sucursal o una ruta, con un indicador acordado y una fecha. No hay migración corporativa ni cambio de ERP sobre la mesa.</p>
+    </article>
+  </div>
+
+  <div class="cols c3" style="margin-top:1.9cqw">
+    <p class="mini"><strong>También aparece:</strong> "¿y si crecemos?" — se suman módulos y usuarios sin cambiar de plataforma.</p>
+    <p class="mini"><strong>También aparece:</strong> "¿migran mis datos?" — clientes, tarifas vigentes y servicios abiertos.</p>
+    <p class="mini"><strong>También aparece:</strong> "¿y el tramo marítimo?" — hoy gestionamos el terrestre; la conexión con embarcadoras está en desarrollo.</p>
+  </div>
+</article>
+
+<!-- 14 · CIERRE -->
+<article class="slide" data-n="14" data-title="Cómo calificar y qué sigue">
+  <header class="head">
+    <p class="eyebrow">Próximo paso</p>
+    <h2 class="t2">Cuatro preguntas y ya sabes qué propuesta armar</h2>
+    <p class="lead">Se hacen en los primeros diez minutos de la demo. Definen el perfil, el módulo de entrada y la forma del precio.</p>
+  </header>
+
+  <ol class="steps" style="margin-bottom:1.9cqw">
+    <li class="step" style="--ac:var(--cyan)"><span class="n">Pregunta 1</span><h4>¿Con qué operan hoy?</h4><p>Planilla, sistema propio, TMS de mercado o ERP corporativo.</p></li>
+    <li class="step" style="--ac:var(--cyan)"><span class="n">Pregunta 2</span><h4>¿Cuántos servicios al mes?</h4><p>Y cuántas personas los coordinan. Ahí sale el tamaño real.</p></li>
+    <li class="step" style="--ac:var(--cyan)"><span class="n">Pregunta 3</span><h4>¿Qué es lo que más les duele?</h4><p>Las llamadas de clientes, las tarifas, el margen o las devoluciones.</p></li>
+    <li class="step" style="--ac:var(--cyan)"><span class="n">Pregunta 4</span><h4>¿Quién firma?</h4><p>El dueño, la gerencia con un número, o un comité con TI adentro.</p></li>
+  </ol>
+
+  <div class="cols c3 fill">
+    <div class="card pcard" style="--ac:var(--p1)"><span class="tag">Si responde planilla</span><h4>Perfil A</h4><p>Demo del portal y del operacional. Propuesta de paquete Núcleo en la misma semana.</p></div>
+    <div class="card pcard" style="--ac:var(--p2)"><span class="tag">Si responde sistema que le queda corto</span><h4>Perfil B</h4><p>Demo del comercial. Se piden los costos actuales y se vuelve con el cuadro comparativo.</p></div>
+    <div class="card pcard" style="--ac:var(--p3)"><span class="tag">Si responde ERP y comité</span><h4>Perfil C</h4><p>Se acota un piloto con dueño, indicador y fecha antes de hablar de plataforma.</p></div>
+  </div>
+</article>
+
+</div><!-- /stage -->
+</div><!-- /deck -->
+
+<nav class="controls" aria-label="Navegación de láminas">
+  <button class="nbtn" id="prev" aria-label="Lámina anterior">‹</button>
+  <div class="dots" id="dots"></div>
+  <button class="nbtn" id="next" aria-label="Lámina siguiente">›</button>
+</nav>
+
+</div><!-- /app -->
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="index" id="index" aria-label="Índice de láminas">
+  <h3>Índice</h3>
+  <ol id="indexList"></ol>
+</aside>
+
+<script>
+(function(){
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dots    = document.getElementById('dots');
+  var list    = document.getElementById('indexList');
+  var count   = document.getElementById('count');
+  var prev    = document.getElementById('prev');
+  var next    = document.getElementById('next');
+  var index   = document.getElementById('index');
+  var scrim   = document.getElementById('scrim');
+  var btnIdx  = document.getElementById('btnIndex');
+  var mobile  = window.matchMedia('(max-width: 900px)');
+  var i = 0;
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  slides.forEach(function(s, n){
+    var d = document.createElement('button');
+    d.className = 'dot';
+    d.type = 'button';
+    d.setAttribute('aria-label', 'Ir a la lámina ' + (n + 1));
+    d.addEventListener('click', function(){ go(n); });
+    dots.appendChild(d);
+
+    var li = document.createElement('li');
+    var b  = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<span>' + pad(n + 1) + '</span>' + (s.dataset.title || '');
+    b.addEventListener('click', function(){ go(n); closeIndex(); });
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+
+  var dotEls  = Array.prototype.slice.call(dots.children);
+  var listEls = Array.prototype.slice.call(list.querySelectorAll('button'));
+
+  function paint(){
+    slides.forEach(function(s, n){ s.classList.toggle('is-active', n === i); });
+    dotEls.forEach(function(d, n){ d.classList.toggle('is-on', n === i); });
+    listEls.forEach(function(b, n){ b.classList.toggle('is-on', n === i); });
+    count.innerHTML = pad(i + 1) + ' <i>/ ' + pad(slides.length) + '</i>';
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+  }
+
+  function go(n, skipHash){
+    if (n < 0 || n > slides.length - 1) return;
+    i = n;
+    if (mobile.matches){
+      slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      listEls.forEach(function(b, k){ b.classList.toggle('is-on', k === i); });
+      return;
+    }
+    paint();
+    if (!skipHash && history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  function openIndex(){ index.classList.add('is-open'); scrim.hidden = false; btnIdx.setAttribute('aria-expanded','true'); }
+  function closeIndex(){ index.classList.remove('is-open'); scrim.hidden = true; btnIdx.setAttribute('aria-expanded','false'); }
+
+  prev.addEventListener('click', function(){ go(i - 1); });
+  next.addEventListener('click', function(){ go(i + 1); });
+  btnIdx.addEventListener('click', function(){ index.classList.contains('is-open') ? closeIndex() : openIndex(); });
+  scrim.addEventListener('click', closeIndex);
+  document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') return closeIndex();
+    if (mobile.matches) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End')  { e.preventDefault(); go(slides.length - 1); }
+  });
+
+  // deslizar en pantallas táctiles
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.changedTouches[0].clientX; }, { passive:true });
+  document.addEventListener('touchend', function(e){
+    if (x0 === null || mobile.matches) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 60) go(dx < 0 ? i + 1 : i - 1);
+    x0 = null;
+  }, { passive:true });
+
+  var start = parseInt((location.hash || '').replace('#',''), 10);
+  if (start > 0 && start <= slides.length) i = start - 1;
+  if (!mobile.matches) paint(); else { paint(); slides.forEach(function(s){ s.classList.add('is-active'); }); }
+  mobile.addEventListener('change', function(){
+    if (mobile.matches) slides.forEach(function(s){ s.classList.add('is-active'); });
+    else paint();
+  });
+})();
+</script>
+</body>
+</html>

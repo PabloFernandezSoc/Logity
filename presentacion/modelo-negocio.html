@@ -227,6 +227,8 @@ td strong{ display:block; color:var(--text); font-weight:600; margin-bottom:.18c
 .rung .amt{ font-family:var(--ff-m); font-size:1.1cqw; color:var(--ac); letter-spacing:.1em; }
 .arrow{ display:grid; place-items:center; color:var(--dim); font-size:1.6cqw; }
 
+.gains{ margin-top:auto; padding-top:1.6cqw; border-top:1px solid var(--line-2); }
+
 .note{
   border-left:2px solid var(--warn); padding:.5cqw 0 .5cqw 1.2cqw;
   font-size:1.16cqw; color:var(--dim); line-height:1.45;
@@ -309,6 +311,7 @@ td strong{ display:block; color:var(--text); font-weight:600; margin-bottom:.18c
   .stat b{ font-size:30px; } .stat span{ font-size:12.5px; }
   .step h4{ font-size:16px; } .step p{ font-size:13.5px; }
   .note{ font-size:13px; padding-left:12px; }
+  .gains{ margin-top:18px; padding-top:16px; }
   th,td{ font-size:12.5px; padding:9px 10px; } thead th,tbody th{ font-size:11px; }
   .controls{ display:none; }
   .topbar{ padding:11px 14px; gap:10px; }
@@ -325,8 +328,10 @@ td strong{ display:block; color:var(--text); font-weight:600; margin-bottom:.18c
   .slide{
     position:static; opacity:1 !important; visibility:visible !important; transform:none !important;
     width:1280px; height:720px; border-radius:0; border:0;
+    container-type:size;            /* cada lámina es su propio contenedor: las cqw siguen calzando */
     page-break-after:always; break-after:page;
   }
+  .slide:last-child{ page-break-after:auto; break-after:auto; }
 }
 </style>
 
@@ -547,11 +552,14 @@ td strong{ display:block; color:var(--text); font-weight:600; margin-bottom:.18c
     <li class="step"><span class="n">Semana 4</span><h4>Portal arriba</h4><p>Se abre el acceso a sus dos o tres clientes más ruidosos primero.</p></li>
   </ol>
 
-  <div class="cols c4" style="--ac:var(--p1); margin-top:1.9cqw">
+  <div class="gains" style="--ac:var(--p1)">
+    <p class="eyebrow is-p1" style="margin-bottom:1.1cqw">Lo que cambia cuando termina el mes 1</p>
+    <div class="cols c4">
     <div class="stat"><b>–1</b><span>persona menos coordinando por teléfono</span></div>
     <div class="stat"><b>0</b><span>planillas paralelas al cerrar el mes</span></div>
     <div class="stat"><b>24/7</b><span>estado de la carga sin llamar</span></div>
     <div class="stat"><b>Mensual</b><span>margen por servicio, no al cierre</span></div>
+    </div>
   </div>
 </article>
 

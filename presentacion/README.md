@@ -18,7 +18,7 @@ python3 -m http.server 8080   # luego abrir /presentacion/modelo-negocio.html
 | Avanzar / retroceder | `→` `←`, barra espaciadora, `Re Pág` / `Av Pág`, o deslizar |
 | Ir al inicio o al final | `Inicio` / `Fin` |
 | Saltar a una lámina | Botón **Índice**, los puntos inferiores, o `#7` en la URL |
-| Exportar a PDF | Botón **Exportar PDF** — cada lámina sale en una página apaisada |
+| Exportar a PDF | Botón **Exportar PDF** — cada lámina sale en una página apaisada de 1280 × 720 (16:9) |
 
 En pantallas bajo 900 px el deck se lee como documento: las láminas se apilan y
 se recorren con scroll.

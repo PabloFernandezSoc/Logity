@@ -1,6 +1,29 @@
-# Presentación — Modelo de negocio
+# Presentaciones
 
-`modelo-negocio.html` es un deck de 14 láminas sobre cómo se vende Logity a los
+Dos decks, mismo sistema visual y mismos controles. El primero es interno; el
+segundo se muestra en reunión con el cliente.
+
+| Archivo | Para quién | Largo |
+|---|---|---|
+| `modelo-negocio.html` | interno — comercial y socios | 14 láminas |
+| `comercial-clientes.html` | el cliente, en reunión o por correo | 8 láminas |
+
+---
+
+## `comercial-clientes.html` — presentación de venta
+
+Corta y sin jerga interna: el problema del día a día, los dos ejes de la
+plataforma, el portal, el módulo comercial y el operacional con pantallas de
+ejemplo, las integraciones y el cierre con la demo. No menciona segmentación,
+precios ni estrategia — eso vive en el deck interno.
+
+Publicada en https://claude.ai/artifact/8bcNkQHzzHP6DEYKSxQQUn
+
+---
+
+## `modelo-negocio.html` — deck interno
+
+Deck de 14 láminas sobre cómo se vende Logity a los
 tres perfiles de cliente: el que quiere escalar (A), el que ya tiene sistema y
 quiere potenciar o ahorrar (B) y el gran operador con el que la jugada es
 integrarse (C).
@@ -11,7 +34,7 @@ Es un archivo único, sin dependencias ni build. Se abre directo en el navegador
 python3 -m http.server 8080   # luego abrir /presentacion/modelo-negocio.html
 ```
 
-## Cómo se usa
+## Cómo se usan (los dos)
 
 | Acción | Cómo |
 |---|---|

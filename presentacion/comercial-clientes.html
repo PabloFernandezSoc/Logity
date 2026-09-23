@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+
+<title>Logity para tu operación</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
+<style>
+/* =========================================================
+   Logity — deck comercial para clientes
+   Mismo chasis que el deck interno: azul eléctrico sobre negro,
+   Archivo (títulos) + IBM Plex Sans (cuerpo) + Plex Mono (datos).
+   Mundo visual único y deliberado: todo se pinta explícito.
+   ========================================================= */
+:root{
+  color-scheme: dark;
+
+  --bg:          #04060d;
+  --bg-2:        #070b16;
+  --surface:     rgba(255,255,255,.038);
+  --surface-2:   rgba(255,255,255,.065);
+  --line:        rgba(140,170,255,.15);
+  --line-2:      rgba(140,170,255,.32);
+
+  --text:        #e9eefb;
+  --soft:        #a9b6d4;
+  --dim:         #7887a8;
+
+  --blue:        #2f6bff;
+  --blue-br:     #4f8cff;
+  --cyan:        #6fe3ff;
+  --violet:      #9b8bff;
+
+  --ok:          #45d6a5;
+  --warn:        #ffb648;
+
+  /* un acento por perfil: la escala fría es la escala de madurez */
+  --p1:          #6fe3ff;
+  --p2:          #4f8cff;
+  --p3:          #9b8bff;
+
+  --ff-d: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --ff-b: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ff-m: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  margin:0;
+  background:
+    radial-gradient(1100px 620px at 78% -12%, rgba(47,107,255,.20), transparent 62%),
+    radial-gradient(760px 460px at 6% 104%, rgba(111,227,255,.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:var(--ff-b);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  min-height:100dvh;
+}
+h1,h2,h3,h4{ font-family:var(--ff-d); margin:0; line-height:1.08; letter-spacing:-.025em; font-weight:700; text-wrap:balance; }
+p{ margin:0; }
+ul,ol{ margin:0; padding:0; list-style:none; }
+strong{ color:#fff; font-weight:600; }
+em{ font-style:normal; color:var(--soft); }
+button{ font:inherit; color:inherit; }
+:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; border-radius:6px; }
+
+/* ---------- marco de la app ---------- */
+.app{ display:flex; flex-direction:column; min-height:100dvh; }
+
+.topbar{
+  display:flex; align-items:center; gap:18px;
+  padding:14px 22px; border-bottom:1px solid var(--line);
+  background:rgba(4,6,13,.72); backdrop-filter:blur(10px);
+  position:sticky; top:0; z-index:40;
+}
+.brand{ display:flex; align-items:center; gap:9px; }
+.brand svg{ width:26px; height:26px; display:block; }
+.brand b{ font-family:var(--ff-d); font-weight:700; font-size:18px; letter-spacing:-.02em; }
+.topbar__meta{
+  font-family:var(--ff-m); font-size:11.5px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--dim); margin-left:4px; padding-left:16px; border-left:1px solid var(--line);
+}
+.topbar__sp{ flex:1; }
+.tbtn{
+  background:var(--surface); border:1px solid var(--line); color:var(--soft);
+  border-radius:9px; padding:7px 13px; font-size:13px; cursor:pointer;
+  transition:background .18s, color .18s, border-color .18s;
+}
+.tbtn:hover{ background:var(--surface-2); color:var(--text); border-color:var(--line-2); }
+.count{ font-family:var(--ff-m); font-size:13px; color:var(--soft); letter-spacing:.06em; font-variant-numeric:tabular-nums; }
+.count i{ color:var(--dim); font-style:normal; }
+
+/* ---------- escenario 16:9 ---------- */
+.deck{ flex:1; display:grid; place-items:center; padding:26px 22px 12px; }
+.stage{
+  width:min(100%, (100dvh - 176px) * 16 / 9);
+  max-width:1360px;
+  aspect-ratio:16/9;
+  position:relative;
+  container-type:size;
+}
+.slide{
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  padding:4.4cqw 5cqw 3.6cqw;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.012) 42%, transparent),
+    var(--bg-2);
+  box-shadow:0 30px 90px -46px rgba(0,14,70,.95);
+  overflow:hidden;
+  opacity:0; visibility:hidden; transform:translateY(10px);
+  transition:opacity .32s ease, transform .32s ease, visibility .32s;
+}
+.slide.is-active{ opacity:1; visibility:visible; transform:none; }
+/* el número de lámina, en el canto */
+.slide::after{
+  content:attr(data-n);
+  position:absolute; right:2.4cqw; bottom:1.8cqw;
+  font-family:var(--ff-m); font-size:1.5cqw; color:var(--dim); letter-spacing:.1em;
+}
+
+/* ---------- tipografía dentro de la lámina ---------- */
+.eyebrow{
+  font-family:var(--ff-m); font-size:1.32cqw; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--cyan); margin-bottom:1.1cqw;
+}
+.eyebrow.is-p1{ color:var(--p1); } .eyebrow.is-p2{ color:var(--p2); } .eyebrow.is-p3{ color:var(--p3); }
+.t1{ font-size:5.6cqw; font-weight:800; letter-spacing:-.035em; }
+.t2{ font-size:3.25cqw; }
+.t3{ font-size:1.95cqw; font-weight:600; }
+.lead{ font-size:1.52cqw; color:var(--soft); line-height:1.5; max-width:62ch; }
+.body{ font-size:1.36cqw; color:var(--soft); line-height:1.55; }
+.mini{ font-size:1.18cqw; color:var(--dim); line-height:1.5; }
+.mono{ font-family:var(--ff-m); font-variant-numeric:tabular-nums; }
+.grad{ background:linear-gradient(96deg, var(--cyan), var(--blue-br) 46%, var(--violet)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.head{ margin-bottom:2.3cqw; }
+.head .lead{ margin-top:1cqw; }
+
+/* ---------- retículas ---------- */
+.cols{ display:grid; gap:1.5cqw; }
+.c2{ grid-template-columns:repeat(2,1fr); }
+.c3{ grid-template-columns:repeat(3,1fr); }
+.c4{ grid-template-columns:repeat(4,1fr); }
+.fill{ flex:1; align-content:center; }
+.split{ display:grid; grid-template-columns:1.05fr 1fr; gap:3.4cqw; flex:1; align-items:start; }
+
+/* ---------- piezas ---------- */
+.card{
+  border:1px solid var(--line); border-radius:14px; padding:1.6cqw 1.55cqw;
+  background:var(--surface); display:flex; flex-direction:column; gap:.8cqw;
+}
+.card h4{ font-size:1.6cqw; font-weight:600; }
+.card p{ font-size:1.24cqw; color:var(--soft); line-height:1.44; }
+
+/* tarjeta de perfil: la barra superior es el código de color del segmento */
+.pcard{ position:relative; border-top-width:2px; border-top-color:var(--ac,var(--blue-br)); }
+.pcard .tag{
+  font-family:var(--ff-m); font-size:1.1cqw; letter-spacing:.16em; text-transform:uppercase; color:var(--ac);
+}
+
+.list{ display:flex; flex-direction:column; gap:.8cqw; }
+.list li{ font-size:1.32cqw; color:var(--soft); line-height:1.45; padding-left:1.9cqw; position:relative; }
+.list li::before{
+  content:""; position:absolute; left:0; top:.62cqw;
+  width:.62cqw; height:.62cqw; border-radius:50%;
+  background:var(--ac,var(--blue-br));
+}
+.list.is-x li::before{ background:none; content:"×"; color:var(--warn); top:-.05cqw; left:.1cqw; font-size:1.5cqw; line-height:1; }
+.list.is-ok li::before{ background:none; content:"✓"; color:var(--ok); top:-.05cqw; left:0; font-size:1.3cqw; line-height:1.2; }
+
+.kv{ display:grid; grid-template-columns:auto 1fr; gap:.7cqw 1.4cqw; align-items:baseline; }
+.kv dt{ font-family:var(--ff-m); font-size:1.06cqw; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); white-space:nowrap; }
+.kv dd{ margin:0; font-size:1.3cqw; color:var(--text); }
+
+.chip{
+  display:inline-flex; align-items:center; gap:.5cqw;
+  font-family:var(--ff-m); font-size:1.06cqw; letter-spacing:.09em;
+  border:1px solid var(--line-2); border-radius:999px; padding:.42cqw 1cqw; color:var(--soft);
+  background:rgba(255,255,255,.03);
+}
+.chip b{ color:var(--ac,var(--cyan)); font-weight:500; }
+.chips{ display:flex; flex-wrap:wrap; gap:.7cqw; }
+
+.stat{ display:flex; flex-direction:column; gap:.35cqw; }
+.stat b{ font-family:var(--ff-d); font-size:2.4cqw; font-weight:700; color:var(--ac,var(--text)); letter-spacing:-.03em; line-height:1; }
+.stat span{ font-size:1.14cqw; color:var(--dim); }
+
+/* tabla comparativa */
+.tblwrap{ overflow-x:auto; flex:1; }
+table{ width:100%; border-collapse:collapse; }
+th,td{ text-align:left; padding:1.05cqw 1.2cqw; vertical-align:top; font-size:1.16cqw; line-height:1.42; }
+thead th{
+  font-family:var(--ff-m); font-size:1.04cqw; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--dim); border-bottom:1px solid var(--line-2); font-weight:400;
+}
+thead th.p1{ color:var(--p1); } thead th.p2{ color:var(--p2); } thead th.p3{ color:var(--p3); }
+tbody tr{ border-bottom:1px solid var(--line); }
+tbody tr:last-child{ border-bottom:0; }
+tbody th{
+  font-family:var(--ff-m); font-weight:400; font-size:1.02cqw; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--dim); white-space:nowrap; width:1%;
+}
+td{ color:var(--soft); }
+td strong{ display:block; color:var(--text); font-weight:600; margin-bottom:.18cqw; }
+
+/* pasos numerados: se usan sólo donde el orden es real */
+.steps{ display:grid; grid-template-columns:repeat(4,1fr); gap:1.3cqw; }
+.step{ border-top:1px solid var(--line-2); padding-top:1.2cqw; display:flex; flex-direction:column; gap:.55cqw; }
+.step .n{ font-family:var(--ff-m); font-size:1.1cqw; color:var(--ac,var(--blue-br)); letter-spacing:.12em; }
+.step h4{ font-size:1.5cqw; font-weight:600; }
+.step p{ font-size:1.16cqw; color:var(--dim); line-height:1.45; }
+
+/* barra de expansión (land & expand) */
+.ladder{ display:flex; align-items:stretch; gap:1cqw; }
+.rung{
+  flex:1; border:1px solid var(--line); border-radius:12px; padding:1.5cqw;
+  background:var(--surface); display:flex; flex-direction:column; gap:.6cqw;
+  border-left:2px solid var(--ac);
+}
+.rung .amt{ font-family:var(--ff-m); font-size:1.1cqw; color:var(--ac); letter-spacing:.1em; }
+.arrow{ display:grid; place-items:center; color:var(--dim); font-size:1.6cqw; }
+
+.gains{ margin-top:auto; padding-top:1.6cqw; border-top:1px solid var(--line-2); }
+
+.note{
+  border-left:2px solid var(--warn); padding:.5cqw 0 .5cqw 1.2cqw;
+  font-size:1.16cqw; color:var(--dim); line-height:1.45;
+}
+
+/* portada */
+.cover{ justify-content:center; gap:2.6cqw; }
+.cover .t1{ max-width:19ch; }
+.cover__foot{ display:flex; align-items:center; gap:1.6cqw; border-top:1px solid var(--line); padding-top:1.8cqw; }
+
+/* ---------- controles ---------- */
+.controls{
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  padding:8px 22px 20px;
+}
+.nbtn{
+  width:40px; height:40px; border-radius:11px; cursor:pointer;
+  background:var(--surface); border:1px solid var(--line); color:var(--soft);
+  display:grid; place-items:center; font-size:17px; line-height:1;
+  transition:background .18s, color .18s, border-color .18s;
+}
+.nbtn:hover:not(:disabled){ background:var(--surface-2); color:#fff; border-color:var(--line-2); }
+.nbtn:disabled{ opacity:.3; cursor:not-allowed; }
+.dots{ display:flex; gap:6px; }
+.dot{
+  width:9px; height:9px; padding:0; border-radius:50%; cursor:pointer;
+  background:rgba(140,170,255,.22); border:0; transition:background .2s, transform .2s;
+}
+.dot:hover{ background:rgba(140,170,255,.5); }
+.dot.is-on{ background:var(--blue-br); transform:scale(1.28); }
+
+/* índice */
+.index{
+  position:fixed; inset:0 0 0 auto; width:min(400px,86vw); z-index:60;
+  background:var(--bg-2); border-left:1px solid var(--line-2);
+  padding:22px; overflow-y:auto;
+  box-shadow:-30px 0 80px -40px rgba(0,0,0,.9);
+  transform:translateX(100%); transition:transform .28s ease;
+}
+.index.is-open{ transform:none; }
+.index h3{ font-size:14px; font-family:var(--ff-m); font-weight:400; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); margin-bottom:16px; }
+.index ol{ display:flex; flex-direction:column; gap:2px; }
+.index button{
+  width:100%; text-align:left; background:none; border:0; cursor:pointer;
+  padding:9px 10px; border-radius:8px; color:var(--soft); font-size:14.5px;
+  display:flex; gap:12px; align-items:baseline;
+}
+.index button:hover{ background:var(--surface); color:var(--text); }
+.index button.is-on{ background:var(--surface-2); color:#fff; }
+.index button span{ font-family:var(--ff-m); font-size:12px; color:var(--dim); }
+.scrim{ position:fixed; inset:0; background:rgba(2,4,10,.66); z-index:55; }
+[hidden]{ display:none !important; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition-duration:.01ms !important; animation-duration:.01ms !important; }
+}
+
+/* ---------- móvil: el deck se lee como documento ---------- */
+@media (max-width:900px){
+  .deck{ padding:16px 14px 30px; }
+  .stage{ width:100%; aspect-ratio:auto; container-type:normal; display:flex; flex-direction:column; gap:16px; }
+  .slide{
+    position:static; opacity:1; visibility:visible; transform:none;
+    padding:26px 20px 34px; font-size:15px;
+  }
+  .slide::after{ right:16px; bottom:12px; font-size:11px; }
+  .eyebrow{ font-size:11px; margin-bottom:10px; }
+  .t1{ font-size:34px; } .t2{ font-size:25px; } .t3{ font-size:17px; }
+  .lead{ font-size:15px; margin-top:10px; } .body{ font-size:14px; } .mini{ font-size:13px; }
+  .head{ margin-bottom:20px; }
+  .cols{ gap:14px; } .c2,.c3,.c4,.steps,.split,.ladder{ grid-template-columns:1fr; display:grid; }
+  .arrow{ display:none; }
+  .card{ padding:16px; gap:8px; border-radius:12px; }
+  .card h4{ font-size:16px; } .card p{ font-size:14px; }
+  .pcard .tag,.chip,.rung .amt,.step .n{ font-size:11.5px; }
+  .list li{ font-size:14px; padding-left:18px; }
+  .list li::before{ width:6px; height:6px; top:8px; }
+  .list.is-x li::before,.list.is-ok li::before{ font-size:14px; top:0; }
+  .kv dt{ font-size:11px; } .kv dd{ font-size:14px; }
+  .stat b{ font-size:30px; } .stat span{ font-size:12.5px; }
+  .step h4{ font-size:16px; } .step p{ font-size:13.5px; }
+  .note{ font-size:13px; padding-left:12px; }
+  .gains{ margin-top:18px; padding-top:16px; }
+  th,td{ font-size:12.5px; padding:9px 10px; } thead th,tbody th{ font-size:11px; }
+  .controls{ display:none; }
+  .topbar{ padding:11px 14px; gap:10px; }
+  .topbar__meta,.count{ display:none; }
+}
+
+/* ---------- impresión: una lámina por página apaisada ---------- */
+@media print{
+  @page{ size:1280px 720px; margin:0; }
+  body{ background:#04060d; }
+  .topbar,.controls,.index,.scrim{ display:none !important; }
+  .deck{ padding:0; display:block; }
+  .stage{ width:1280px; max-width:none; aspect-ratio:auto; container-type:normal; display:block; }
+  .slide{
+    position:static; opacity:1 !important; visibility:visible !important; transform:none !important;
+    width:1280px; height:720px; border-radius:0; border:0;
+    container-type:size;            /* cada lámina es su propio contenedor: las cqw siguen calzando */
+    page-break-after:always; break-after:page;
+  }
+  .slide:last-child{ page-break-after:auto; break-after:auto; }
+}
+
+/* ---------- maquetas de pantalla (mismas que muestra la landing) ---------- */
+.mock{
+  border:1px solid var(--line-2); border-radius:12px; overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.015));
+  box-shadow:0 24px 60px -34px rgba(0,10,60,.95);
+}
+.mock__bar{
+  display:flex; align-items:center; gap:.5cqw; padding:.75cqw 1cqw;
+  border-bottom:1px solid var(--line); background:rgba(255,255,255,.035);
+}
+.mock__bar i{ width:.6cqw; height:.6cqw; border-radius:50%; background:rgba(140,170,255,.3); display:block; }
+.mock__bar p{ font-family:var(--ff-m); font-size:1cqw; color:var(--dim); margin-left:.6cqw; }
+.mock__body{ padding:1.4cqw; display:flex; flex-direction:column; gap:1.2cqw; }
+.mock__row{ display:flex; align-items:center; justify-content:space-between; gap:1cqw; }
+.mock__label{ font-family:var(--ff-m); font-size:.95cqw; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); }
+.mock__value{ font-size:1.3cqw; color:var(--text); font-weight:500; }
+.mock__grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1cqw; border-top:1px solid var(--line); padding-top:1.1cqw; }
+.mock__note{ font-family:var(--ff-m); font-size:1cqw; color:var(--ok); }
+
+.chip--live{
+  font-family:var(--ff-m); font-size:.95cqw; letter-spacing:.1em; color:var(--cyan);
+  border:1px solid rgba(111,227,255,.4); border-radius:999px; padding:.3cqw .9cqw;
+  background:rgba(111,227,255,.08);
+}
+
+/* línea de seguimiento del contenedor */
+.track{ display:flex; flex-direction:column; gap:.9cqw; }
+.track__line{ height:.32cqw; border-radius:99px; background:rgba(140,170,255,.18); position:relative; }
+.track__line i{ position:absolute; inset:0 auto 0 0; width:var(--p); border-radius:99px; background:linear-gradient(90deg,var(--blue),var(--cyan)); display:block; }
+.track__steps{ display:grid; grid-template-columns:repeat(5,1fr); }
+.track__steps li{ font-family:var(--ff-m); font-size:.92cqw; color:var(--dim); display:flex; align-items:center; gap:.45cqw; }
+.track__steps li b{ width:.55cqw; height:.55cqw; border-radius:50%; background:rgba(140,170,255,.25); display:block; }
+.track__steps li.is-done b{ background:var(--blue-br); }
+.track__steps li.is-now b{ background:var(--cyan); box-shadow:0 0 0 .28cqw rgba(111,227,255,.2); }
+.track__steps li.is-now{ color:var(--cyan); }
+
+/* tabla de tarifas */
+.rates{ width:100%; border-collapse:collapse; }
+.rates th,.rates td{ padding:.62cqw .7cqw; font-size:1.02cqw; }
+.rates thead th{ font-size:.9cqw; letter-spacing:.1em; }
+.rates td{ font-family:var(--ff-m); color:var(--soft); }
+.rates td:first-child{ font-family:var(--ff-b); }
+.rates .up{ color:var(--ok); }
+.rates .is-muted td{ color:var(--dim); font-style:italic; }
+.rates__toolbar{ display:flex; gap:.6cqw; flex-wrap:wrap; }
+.rates__foot{
+  display:flex; justify-content:space-between; align-items:center;
+  border-top:1px solid var(--line); padding-top:.9cqw;
+  font-size:1.02cqw; color:var(--text);
+}
+.rates__foot em{ font-family:var(--ff-m); font-size:.92cqw; color:var(--dim); }
+
+/* sala de control */
+.kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:.9cqw; }
+.kpi{ border:1px solid var(--line); border-radius:9px; padding:.9cqw; background:rgba(255,255,255,.025); }
+.kpi b{ font-family:var(--ff-d); font-size:2.1cqw; font-weight:700; display:block; line-height:1; }
+.kpi span{ font-size:.95cqw; color:var(--dim); }
+.kpi.warn b{ color:var(--warn); } .kpi.ok b{ color:var(--ok); }
+.alerts{ display:flex; flex-direction:column; gap:.6cqw; }
+.alerts li{ display:flex; align-items:center; gap:.7cqw; font-size:1.02cqw; color:var(--soft); }
+.alerts li b{ font-family:var(--ff-m); color:var(--text); font-weight:400; }
+.alerts li em{ margin-left:auto; font-family:var(--ff-m); font-size:.9cqw; color:var(--dim); }
+.alerts .d{ width:.55cqw; height:.55cqw; border-radius:50%; flex:none; }
+.d--red{ background:var(--danger); } .d--amber{ background:var(--warn); } .d--blue{ background:var(--blue-br); }
+
+/* cierre */
+.cta{
+  display:flex; align-items:center; justify-content:space-between; gap:2cqw;
+  border:1px solid var(--line-2); border-radius:14px; padding:1.8cqw 2cqw;
+  background:linear-gradient(100deg, rgba(47,107,255,.16), rgba(111,227,255,.06));
+  margin-top:auto;
+}
+.cta b{ font-family:var(--ff-d); font-size:2.1cqw; font-weight:700; }
+.cta p{ font-size:1.2cqw; color:var(--soft); margin-top:.3cqw; }
+.cta__mail{ font-family:var(--ff-m); font-size:1.3cqw; color:var(--cyan); white-space:nowrap; }
+
+@media (max-width:900px){
+  .mock__bar p,.mock__label,.mock__note,.chip--live,.track__steps li,.rates thead th,.rates__foot em,.kpi span,.alerts li em{ font-size:11px; }
+  .mock__value,.rates th,.rates td,.rates__foot,.alerts li{ font-size:13px; }
+  .mock__bar i,.track__steps li b,.alerts .d{ width:6px; height:6px; }
+  .mock__body{ padding:14px; gap:12px; }
+  .track__line{ height:4px; }
+  .track__steps{ grid-template-columns:repeat(2,1fr); gap:6px; }
+  .mock__grid,.kpis{ grid-template-columns:repeat(2,1fr); gap:10px; }
+  .kpi b{ font-size:22px; }
+  .cta{ flex-direction:column; align-items:flex-start; gap:12px; padding:18px; margin-top:18px; }
+  .cta b{ font-size:20px; } .cta p{ font-size:14px; } .cta__mail{ font-size:14px; }
+}
+@media print{
+  .mock{ box-shadow:none; }
+}
+</style>
+
+<div class="app">
+
+<header class="topbar">
+  <span class="brand">
+    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M6 22.5c5.4 0 8.3-3.1 11-6.5S22.6 9.5 27 9.5" stroke="#6ea8ff" stroke-width="3" stroke-linecap="round"/><path d="M5 9.5c4.4 0 6.3 2.6 9 6s5.6 7 11 7" stroke="#3b82f6" stroke-width="3" stroke-linecap="round" opacity=".55"/></svg>
+    <b>Logity</b>
+  </span>
+  <span class="topbar__meta">Software para operadores logísticos terrestres</span>
+  <span class="topbar__sp"></span>
+  <span class="count" id="count" aria-live="polite">01 <i>/ 08</i></span>
+  <button class="tbtn" id="btnIndex" aria-expanded="false" aria-controls="index">Índice</button>
+  <button class="tbtn" id="btnPrint">Exportar PDF</button>
+</header>
+
+<div class="deck">
+<div class="stage" id="stage">
+
+<!-- 01 · PORTADA -->
+<article class="slide cover is-active" data-n="01" data-title="Portada">
+  <p class="eyebrow">Importación y exportación en tierra</p>
+  <h1 class="t1">Toda tu operación terrestre,<br /><span class="grad">en una sola plataforma</span></h1>
+  <p class="lead">Retiro, ruta, entrega y devolución del equipo, con el margen a la vista. Y tus clientes siguiendo su carga en línea, sin llamarte.</p>
+  <div class="chips">
+    <span class="chip">Portal de clientes</span>
+    <span class="chip">Comercial</span>
+    <span class="chip">Operacional</span>
+    <span class="chip">Integraciones</span>
+  </div>
+  <div class="cover__foot">
+    <p class="mini mono">Transporte de contenedores · Operadores logísticos · Agencias de aduana · Extraportuarios · Flota propia y subcontratada</p>
+  </div>
+</article>
+
+<!-- 02 · EL PROBLEMA -->
+<article class="slide" data-n="02" data-title="El día a día sin plataforma">
+  <header class="head">
+    <p class="eyebrow">El punto de partida</p>
+    <h2 class="t2">Lo que hoy te cuesta plata y no se ve en ningún informe</h2>
+  </header>
+
+  <div class="cols c4 fill">
+    <article class="card">
+      <h4>La planilla</h4>
+      <p>La programación del día la edita una sola persona. Si falta, la operación se detiene.</p>
+    </article>
+    <article class="card">
+      <h4>El teléfono</h4>
+      <p>Tu equipo pasa el día respondiendo dónde va la carga, camión por camión.</p>
+    </article>
+    <article class="card">
+      <h4>Las tarifas</h4>
+      <p>Cambiarlas es una pega manual, y siempre hay alguien cotizando con la lista vieja.</p>
+    </article>
+    <article class="card">
+      <h4>El margen</h4>
+      <p>Se sabe cuando cierra la contabilidad, tres semanas después de que ya no se puede corregir.</p>
+    </article>
+  </div>
+
+  <p class="body" style="margin-top:2cqw">Ninguno de estos problemas se resuelve contratando a alguien más. Se resuelven cuando la operación, lo comercial y lo que ve tu cliente están sobre la misma información.</p>
+</article>
+
+<!-- 03 · LA PLATAFORMA -->
+<article class="slide" data-n="03" data-title="Dos ejes, una plataforma">
+  <header class="head">
+    <p class="eyebrow">La plataforma</p>
+    <h2 class="t2">Dos ejes, una sola plataforma</h2>
+    <p class="lead">Lo que ven tus clientes y lo que mueve tu operación, sobre los mismos datos. Sin doble digitación y sin planillas paralelas.</p>
+  </header>
+
+  <div class="cols c2 fill">
+    <article class="card pcard" style="--ac:var(--cyan)">
+      <span class="tag">Eje 1</span>
+      <h4>Portal de clientes</h4>
+      <p>Tu cliente entra con su acceso y ve su carga: etapa, fechas, documentos y la posición del camión. Deja de preguntar por WhatsApp.</p>
+    </article>
+    <article class="card pcard" style="--ac:var(--blue-br)">
+      <span class="tag">Eje 2</span>
+      <h4>Tu operación</h4>
+      <p><strong>Comercial:</strong> tarifas, acuerdos y márgenes. <strong>Operacional:</strong> de la proyección de carga a la devolución del vacío, con sala de control.</p>
+    </article>
+  </div>
+
+  <p class="body" style="margin-top:2cqw">Puedes partir por un módulo y sumar el resto cuando lo necesites. No hay que comprarlo todo para empezar a usarlo.</p>
+</article>
+
+<!-- 04 · PORTAL -->
+<article class="slide" data-n="04" data-title="Portal de clientes">
+  <div class="split">
+    <div>
+      <p class="eyebrow">Eje 1 · Portal de clientes</p>
+      <h2 class="t2" style="margin-bottom:1.2cqw">Tus clientes siguen su carga solos</h2>
+      <ul class="list is-ok">
+        <li>Etapa y fechas de cada servicio, actualizadas desde tu operación.</li>
+        <li>Guías, actas y documentos listos para descargar.</li>
+        <li>Posición del camión mientras va en ruta.</li>
+        <li>Accesos y permisos por empresa: cada cliente ve lo suyo.</li>
+      </ul>
+      <p class="body" style="margin-top:1.6cqw">Es también un argumento comercial: se lo muestras a un importador en una reunión y se nota la diferencia.</p>
+    </div>
+
+    <div class="mock" role="img" aria-label="Portal de clientes siguiendo un contenedor en ruta">
+      <div class="mock__bar"><i></i><i></i><i></i><p>portal.logity.com</p></div>
+      <div class="mock__body">
+        <div class="mock__row">
+          <div><p class="mock__label">Contenedor</p><p class="mock__value mono">MSKU 482 991-3</p></div>
+          <span class="chip--live">En ruta</span>
+        </div>
+        <div class="track">
+          <div class="track__line"><i style="--p:62%"></i></div>
+          <ul class="track__steps">
+            <li class="is-done"><b></b>Coordinado</li>
+            <li class="is-done"><b></b>Retiro</li>
+            <li class="is-now"><b></b>En ruta</li>
+            <li><b></b>Entrega</li>
+            <li><b></b>Devolución</li>
+          </ul>
+        </div>
+        <div class="mock__grid">
+          <div><p class="mock__label">Retiro</p><p class="mock__value">San Antonio</p></div>
+          <div><p class="mock__label">Entrega</p><p class="mock__value">Quilicura</p></div>
+          <div><p class="mock__label">Fecha</p><p class="mock__value">12 nov</p></div>
+          <div><p class="mock__label">Docs.</p><p class="mock__value">6</p></div>
+        </div>
+        <p class="mock__note">◉ GPS del camión activo · hace 4 min</p>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- 05 · COMERCIAL -->
+<article class="slide" data-n="05" data-title="Comercial: tarifas y margen">
+  <div class="split">
+    <div class="mock" role="img" aria-label="Edición masiva de tarifas">
+      <div class="mock__bar"><i></i><i></i><i></i><p>Tarifas · edición masiva</p></div>
+      <div class="mock__body">
+        <div class="rates__toolbar">
+          <span class="chip">218 seleccionadas</span>
+          <span class="chip">Vigencia nov–dic</span>
+          <span class="chip" style="--ac:var(--ok)"><b>+ 4,5% flete</b></span>
+        </div>
+        <table class="rates">
+          <thead><tr><th>Ruta</th><th>Equipo</th><th>Actual</th><th>Nueva</th></tr></thead>
+          <tbody>
+            <tr><td>S. Antonio → Quilicura</td><td>40'</td><td>285.000</td><td class="up">297.800</td></tr>
+            <tr><td>Valparaíso → Santiago</td><td>20'</td><td>240.000</td><td class="up">250.800</td></tr>
+            <tr><td>S. Antonio → Rancagua</td><td>40' HC</td><td>310.000</td><td class="up">323.900</td></tr>
+            <tr class="is-muted"><td colspan="4">+ 215 filas</td></tr>
+          </tbody>
+        </table>
+        <div class="rates__foot"><span>Aplicar a 218 tarifas</span><em>Vista previa activa</em></div>
+      </div>
+    </div>
+
+    <div>
+      <p class="eyebrow">Eje 2 · Comercial</p>
+      <h2 class="t2" style="margin-bottom:1.2cqw">Tarifas, acuerdos y márgenes bajo control</h2>
+      <ul class="list" style="--ac:var(--blue-br)">
+        <li><strong>Modificación masiva:</strong> cientos de tarifas por ruta, equipo o vigencia en una sola acción, con vista previa.</li>
+        <li><strong>Acuerdos comerciales:</strong> condiciones y recargos por cliente —estadía, porteo, falso flete— siempre vigentes al cotizar.</li>
+        <li><strong>Análisis de venta:</strong> margen por servicio, cliente, ejecutivo y ruta, durante el mes.</li>
+        <li><strong>Trazabilidad:</strong> quién cambió qué tarifa, cuándo y bajo qué acuerdo.</li>
+      </ul>
+    </div>
+  </div>
+</article>
+
+<!-- 06 · OPERACIONAL -->
+<article class="slide" data-n="06" data-title="Operacional y sala de control">
+  <header class="head">
+    <p class="eyebrow">Eje 2 · Operacional</p>
+    <h2 class="t2">De la proyección de carga a la devolución</h2>
+  </header>
+
+  <ol class="steps" style="margin-bottom:2cqw">
+    <li class="step"><span class="n">01</span><h4>Proyección</h4><p>Volumen comprometido contra capacidad de flota.</p></li>
+    <li class="step"><span class="n">02</span><h4>Coordinación</h4><p>Camión, chofer, documentos y proveedores, con responsable.</p></li>
+    <li class="step"><span class="n">03</span><h4>En curso</h4><p>Hitos cumplidos, desvíos y GPS a la vista.</p></li>
+    <li class="step"><span class="n">04</span><h4>Finalizado</h4><p>Entrega, devolución del vacío, costos y margen real.</p></li>
+  </ol>
+
+  <div class="split">
+    <div>
+      <h3 class="t3" style="margin-bottom:.9cqw">Sala de control</h3>
+      <p class="body">Un tablero con el pulso del día: camiones en ruta, servicios en riesgo, hitos vencidos y devoluciones pendientes. Los problemas aparecen antes de que te los reclame el cliente —o antes de que corra la estadía.</p>
+    </div>
+
+    <div class="mock" role="img" aria-label="Sala de control con indicadores del día">
+      <div class="mock__bar"><i></i><i></i><i></i><p>Sala de control</p></div>
+      <div class="mock__body">
+        <div class="kpis">
+          <div class="kpi"><b>38</b><span>En ruta</span></div>
+          <div class="kpi warn"><b>7</b><span>Hitos vencidos</span></div>
+          <div class="kpi"><b>23</b><span>Por coordinar</span></div>
+          <div class="kpi ok"><b>12</b><span>Devoluciones</span></div>
+        </div>
+        <ul class="alerts">
+          <li><span class="d d--red"></span><b>SRV-10428</b> Guía de despacho pendiente <em>hace 2 d</em></li>
+          <li><span class="d d--amber"></span><b>SRV-10437</b> Retiro reprogramado · avisar al cliente <em>hoy</em></li>
+          <li><span class="d d--blue"></span><b>SRV-10441</b> GPS del camión vinculado <em>hace 12 m</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</article>
+
+<!-- 07 · A TU MEDIDA -->
+<article class="slide" data-n="07" data-title="A tu medida e integraciones">
+  <header class="head">
+    <p class="eyebrow">A tu medida</p>
+    <h2 class="t2">Se configura a tu operación, no al revés</h2>
+    <p class="lead">Adaptamos módulos, estados y campos a tu forma de trabajar, y nos conectamos con las plataformas que ya usas.</p>
+  </header>
+
+  <div class="cols c4 fill">
+    <article class="card"><h4>Proveedores GPS</h4><p>Generamos el enlace de seguimiento del camión y lo asociamos al servicio. Tu cliente lo ve en el portal.</p></article>
+    <article class="card"><h4>ERP y contabilidad</h4><p>Costos, ingresos y facturación sin volver a digitar en otro sistema.</p></article>
+    <article class="card"><h4>API y archivos</h4><p>Intercambio a medida con el resto de tus sistemas y los de tus clientes.</p></article>
+    <article class="card pcard" style="--ac:var(--warn)"><span class="tag">En desarrollo</span><h4>Embarcadoras</h4><p>Para que tu cliente vea el flujo global de su carga, no sólo el tramo terrestre.</p></article>
+  </div>
+</article>
+
+<!-- 08 · CIERRE -->
+<article class="slide" data-n="08" data-title="Por qué Logity y próximo paso">
+  <header class="head">
+    <p class="eyebrow">Por qué Logity</p>
+    <h2 class="t2">Gestión simple de llevar</h2>
+  </header>
+
+  <div class="cols c4">
+    <article class="card"><h4>Una sola fuente de verdad</h4><p>Comercial y operaciones sobre la misma información.</p></article>
+    <article class="card"><h4>Menos llamadas</h4><p>El portal responde por ti las preguntas de siempre.</p></article>
+    <article class="card"><h4>Margen a la vista</h4><p>Durante el mes, no al cerrarlo.</p></article>
+    <article class="card"><h4>Fácil de aprender</h4><p>Pantallas pensadas para quien opera todo el día.</p></article>
+  </div>
+
+  <div class="cta">
+    <div>
+      <b>Agenda una demo</b>
+      <p>30 minutos, en línea, sobre tus servicios y tus flujos. Sin compromiso.</p>
+    </div>
+    <span class="cta__mail">contacto@logity.com</span>
+  </div>
+</article>
+
+</div><!-- /stage -->
+</div><!-- /deck -->
+
+<nav class="controls" aria-label="Navegación de láminas">
+  <button class="nbtn" id="prev" aria-label="Lámina anterior">‹</button>
+  <div class="dots" id="dots"></div>
+  <button class="nbtn" id="next" aria-label="Lámina siguiente">›</button>
+</nav>
+
+</div><!-- /app -->
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="index" id="index" aria-label="Índice de láminas">
+  <h3>Índice</h3>
+  <ol id="indexList"></ol>
+</aside>
+
+<script>
+(function(){
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dots    = document.getElementById('dots');
+  var list    = document.getElementById('indexList');
+  var count   = document.getElementById('count');
+  var prev    = document.getElementById('prev');
+  var next    = document.getElementById('next');
+  var index   = document.getElementById('index');
+  var scrim   = document.getElementById('scrim');
+  var btnIdx  = document.getElementById('btnIndex');
+  var mobile  = window.matchMedia('(max-width: 900px)');
+  var i = 0;
+
+  function pad(n){ return (n < 10 ? '0' : '') + n; }
+
+  slides.forEach(function(s, n){
+    var d = document.createElement('button');
+    d.className = 'dot';
+    d.type = 'button';
+    d.setAttribute('aria-label', 'Ir a la lámina ' + (n + 1));
+    d.addEventListener('click', function(){ go(n); });
+    dots.appendChild(d);
+
+    var li = document.createElement('li');
+    var b  = document.createElement('button');
+    b.type = 'button';
+    b.innerHTML = '<span>' + pad(n + 1) + '</span>' + (s.dataset.title || '');
+    b.addEventListener('click', function(){ go(n); closeIndex(); });
+    li.appendChild(b);
+    list.appendChild(li);
+  });
+
+  var dotEls  = Array.prototype.slice.call(dots.children);
+  var listEls = Array.prototype.slice.call(list.querySelectorAll('button'));
+
+  function paint(){
+    slides.forEach(function(s, n){ s.classList.toggle('is-active', n === i); });
+    dotEls.forEach(function(d, n){ d.classList.toggle('is-on', n === i); });
+    listEls.forEach(function(b, n){ b.classList.toggle('is-on', n === i); });
+    count.innerHTML = pad(i + 1) + ' <i>/ ' + pad(slides.length) + '</i>';
+    prev.disabled = (i === 0);
+    next.disabled = (i === slides.length - 1);
+  }
+
+  function go(n, skipHash){
+    if (n < 0 || n > slides.length - 1) return;
+    i = n;
+    if (mobile.matches){
+      slides[i].scrollIntoView({ behavior: 'smooth', block: 'start' });
+      listEls.forEach(function(b, k){ b.classList.toggle('is-on', k === i); });
+      return;
+    }
+    paint();
+    if (!skipHash && history.replaceState) history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  function openIndex(){ index.classList.add('is-open'); scrim.hidden = false; btnIdx.setAttribute('aria-expanded','true'); }
+  function closeIndex(){ index.classList.remove('is-open'); scrim.hidden = true; btnIdx.setAttribute('aria-expanded','false'); }
+
+  prev.addEventListener('click', function(){ go(i - 1); });
+  next.addEventListener('click', function(){ go(i + 1); });
+  btnIdx.addEventListener('click', function(){ index.classList.contains('is-open') ? closeIndex() : openIndex(); });
+  scrim.addEventListener('click', closeIndex);
+  document.getElementById('btnPrint').addEventListener('click', function(){ window.print(); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape') return closeIndex();
+    if (mobile.matches) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End')  { e.preventDefault(); go(slides.length - 1); }
+  });
+
+  // deslizar en pantallas táctiles
+  var x0 = null;
+  document.addEventListener('touchstart', function(e){ x0 = e.changedTouches[0].clientX; }, { passive:true });
+  document.addEventListener('touchend', function(e){
+    if (x0 === null || mobile.matches) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 60) go(dx < 0 ? i + 1 : i - 1);
+    x0 = null;
+  }, { passive:true });
+
+  var start = parseInt((location.hash || '').replace('#',''), 10);
+  if (start > 0 && start <= slides.length) i = start - 1;
+  if (!mobile.matches) paint(); else { paint(); slides.forEach(function(s){ s.classList.add('is-active'); }); }
+  mobile.addEventListener('change', function(){
+    if (mobile.matches) slides.forEach(function(s){ s.classList.add('is-active'); });
+    else paint();
+  });
+})();
+</script>
+</body>
+</html>
